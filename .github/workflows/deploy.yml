@@ -1,3 +1,10 @@
+name: Deploy Spring Boot to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -15,11 +22,6 @@ jobs:
       - name: Build with Maven
         run: mvn clean install
 
-      - name: Create .env file with MongoDB URI
-        run: |
-          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" > .env
-          echo "Other environment variables can go here if necessary" >> .env
-
       - name: Copy JAR to EC2
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > private_key.pem
@@ -29,9 +31,24 @@ jobs:
       - name: Run Spring Boot App on EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          # Create .env file with MongoDB URI on EC2 (if needed)
-          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" > /home/ubuntu/.env
+          echo ">>> Stopping any running instance of the app"
           sudo pkill -f 'ProjectGreenie-0.0.1-SNAPSHOT.jar' || true
+
+          echo ">>> Setting up environment variables"
+          echo "export MONGODB_URI=${{ secrets.MONGODB_URI }}" >> ~/.bashrc
+          source ~/.bashrc
+
+          echo ">>> Granting execute permissions to JAR"
           chmod +x /home/ubuntu/ProjectGreenie-0.0.1-SNAPSHOT.jar
+
+          echo ">>> Starting Spring Boot application..."
           nohup java -jar /home/ubuntu/ProjectGreenie-0.0.1-SNAPSHOT.jar > /home/ubuntu/log.txt 2>&1 &
+
+          sleep 5  # Give time for the app to start
+
+          echo ">>> Checking if the application is running..."
+          pgrep -f 'ProjectGreenie-0.0.1-SNAPSHOT.jar' && echo "✅ App is running!" || echo "❌ App failed to start!"
           EOF
+
+      - name: Clean up private key
+        run: rm -f private_key.pem
