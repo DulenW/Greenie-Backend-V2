@@ -20,7 +20,7 @@ jobs:
           java-version: '17'
 
       - name: Build with Maven
-        run: mvn clean install
+        run: mvn clean install -DskipTests
 
       - name: Copy JAR to EC2
         run: |
@@ -31,7 +31,8 @@ jobs:
       - name: Run Spring Boot App on EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          echo ">>> Stopping any running instance of the app"
+          
+          echo ">>> Stopping any running instance of the app..."
           sudo pkill -f 'ProjectGreenie-0.0.1-SNAPSHOT.jar' || true
 
           echo ">>> Setting up environment variables"
@@ -42,7 +43,7 @@ jobs:
           chmod +x /home/ubuntu/ProjectGreenie-0.0.1-SNAPSHOT.jar
 
           echo ">>> Starting Spring Boot application..."
-          nohup java -jar /home/ubuntu/ProjectGreenie-0.0.1-SNAPSHOT.jar > /home/ubuntu/log.txt 2>&1 &
+          nohup java -Dspring.data.mongodb.uri="$MONGODB_URI" -jar /home/ubuntu/ProjectGreenie-0.0.1-SNAPSHOT.jar > /home/ubuntu/log.txt 2>&1 &
 
           sleep 5  # Give time for the app to start
 

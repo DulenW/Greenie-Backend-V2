@@ -1,4 +1,5 @@
 spring:
   data:
     mongodb:
-      uri: ${MONGODB_URI}
+      uri: ${MONGO_URI}
+      database: greenie_db
