@@ -53,7 +53,7 @@ jobs:
           chmod +x /home/ubuntu/ProjectGreenie-0.0.1-SNAPSHOT.jar
 
           echo ">>> Starting Spring Boot application..."
-          nohup java -Dspring.data.mongodb.uri="$MONGODB_URI" -jar /home/ubuntu/ProjectGreenie-0.0.1-SNAPSHOT.jar > /home/ubuntu/log.txt 2>&1 &
+          nohup java -jar /home/ubuntu/ProjectGreenie-0.0.1-SNAPSHOT.jar --spring.data.mongodb.uri="${{ secrets.MONGODB_URI }}" > /home/ubuntu/log.txt 2>&1 &
 
           sleep 5  # Give time for the app to start
 
