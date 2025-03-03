@@ -9,6 +9,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("test.greenie.dizzpy.dev/");
+        registry.addMapping("/**").allowedOrigins("https://test.greenie.dizzpy.dev");
+
     }
+
 }

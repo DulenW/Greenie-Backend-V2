@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
 
-@CrossOrigin(origins = "https://test.greenie.dizzpy.dev")
+@CrossOrigin(origins = {"http://localhost:5173" , "https://test.greenie.dizzpy.dev"})
 @RestController
 @RequestMapping("/api/posts")
 public class FeedPostController {
@@ -28,7 +28,7 @@ public class FeedPostController {
     private static final String HARDCODED_USER_ID = "user123";
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<?> createPost(@RequestParam("image") MultipartFile imageFile, @RequestParam("content") String content) {
 
         try {
