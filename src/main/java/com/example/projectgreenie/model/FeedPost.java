@@ -1,4 +1,4 @@
-package com.example.projectgreenie.entity;
+package com.example.projectgreenie.model;
 
 import lombok.Getter;
 import lombok.Setter;

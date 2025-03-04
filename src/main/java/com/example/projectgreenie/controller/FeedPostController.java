@@ -1,6 +1,6 @@
 package com.example.projectgreenie.controller;
 
-import com.example.projectgreenie.entity.FeedPost;
+import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
