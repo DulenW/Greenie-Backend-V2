@@ -1,7 +1,7 @@
 package com.example.projectgreenie.repository;
 
 
-import org.apache.catalina.User;
+import com.example.projectgreenie.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 
