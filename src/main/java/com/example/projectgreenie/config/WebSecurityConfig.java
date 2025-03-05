@@ -38,6 +38,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/challenges/all", "/api/challenges/{id}").authenticated()
 // Fix for fetching a specific challenge
                                 .requestMatchers("/api/proof/").authenticated() // Ensuring proof submission is authenticated
+                                .requestMatchers("/admin/proof/all" ,"/admin/proof/{proofID}").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
