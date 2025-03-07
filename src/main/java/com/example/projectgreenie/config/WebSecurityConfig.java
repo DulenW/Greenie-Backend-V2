@@ -63,7 +63,7 @@ public class WebSecurityConfig {
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/", config);gi
+        source.registerCorsConfiguration("/api/", config);
         return source;
     }
 
