@@ -18,14 +18,14 @@ public class ChallengeController {
     private ChallengeService challengeService;
 
     // Add a new challenge
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Challenge> addChallenge(@RequestBody Challenge challenge) {
         Challenge newChallenge = challengeService.addChallenge(challenge);
         return ResponseEntity.ok(newChallenge);
     }
 
     // Get all challenges
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<Challenge>> getAllChallenges() {
         List<Challenge> challenges = challengeService.getAllChallenges();
         return ResponseEntity.ok(challenges);
