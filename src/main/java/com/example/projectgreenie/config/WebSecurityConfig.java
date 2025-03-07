@@ -39,12 +39,22 @@ public class WebSecurityConfig {
                                 // Shop endpoints
                                 "/api/products/**",
                                 "/api/cart/**",
-                                "/shop/**"
+                                "/shop/**",
+
+                                //Challenge endpoints
+                                "/api/challenges/create",
+                                "api/challenges/all",
+                                "/api/challenges/{challengeId}"
                         ).permitAll()
-                        .requestMatchers("/api/challenges/create", "/api/challenges/all").authenticated()
-                        .requestMatchers("/api/challenges/all", "/api/challenges/{id}").authenticated()
+                        // Challenges API
+                        .requestMatchers("/api/challenges/create").authenticated()
+                        .requestMatchers("/api/challenges/all").authenticated()
+                        .requestMatchers("/api/challenges/{challengeId}").authenticated()
+
+                        //Proof API
                         .requestMatchers("/api/proof/").authenticated()
                         .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
+
                         // Feed Post
                         .requestMatchers("/api/posts").permitAll() // create post
                         .anyRequest().authenticated()
