@@ -33,15 +33,21 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                                .requestMatchers("/api/challenges/create", "/api/challenges/all").authenticated()
-                                .requestMatchers("/api/challenges/all", "/api/challenges/{id}").authenticated()
-// Fix for fetching a specific challenge
-                                .requestMatchers("/api/proof/").authenticated() // Ensuring proof submission is authenticated
-                                .requestMatchers("/admin/proof/all" ,"/admin/proof/{proofID}").permitAll()
-                                // Feed Post
-                                .requestMatchers("/api/posts").permitAll() // create post
-                                .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                // Shop endpoints
+                                "/api/products/**",
+                                "/api/cart/**",
+                                "/shop/**"
+                        ).permitAll()
+                        .requestMatchers("/api/challenges/create", "/api/challenges/all").authenticated()
+                        .requestMatchers("/api/challenges/all", "/api/challenges/{id}").authenticated()
+                        .requestMatchers("/api/proof/").authenticated()
+                        .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
+                        // Feed Post
+                        .requestMatchers("/api/posts").permitAll() // create post
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
@@ -56,14 +62,14 @@ public class WebSecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization")); // Ensure frontend can access the token
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/", config);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
