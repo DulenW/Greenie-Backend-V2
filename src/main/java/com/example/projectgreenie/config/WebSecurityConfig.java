@@ -57,6 +57,7 @@ public class WebSecurityConfig {
 
                         // Feed Post
                         .requestMatchers("/api/posts").permitAll() // create post
+                        .requestMatchers("/api/posts/{postId}/like").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);

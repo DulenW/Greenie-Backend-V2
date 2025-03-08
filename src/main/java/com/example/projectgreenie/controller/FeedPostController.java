@@ -1,7 +1,9 @@
 package com.example.projectgreenie.controller;
 
+import com.example.projectgreenie.Dto.PostResponseDTO;
 import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.FeedPostRepository;
+import com.example.projectgreenie.service.FeedPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.List;
 
 @CrossOrigin(origins = {"http://localhost:5173" , "https://test.greenie.dizzpy.dev"})
 @RestController
@@ -85,6 +88,30 @@ public class FeedPostController {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageIO.write(compressedImage, "jpg", outputStream);
         return Base64.getEncoder().encodeToString(outputStream.toByteArray());
+    }
+
+
+    // Like a post
+    @PutMapping("/{postId}/like")
+    public ResponseEntity<?> likePost(@PathVariable("postId") String postId) {
+        FeedPost post = feedPostRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+        post.setLikes(post.getLikes() + 1);
+        feedPostRepository.save(post);
+        return ResponseEntity.ok("Post liked successfully");
+    }
+
+
+    //Get All Posts API
+    private final FeedPostService feedPostService;
+
+    @Autowired
+    public FeedPostController(FeedPostService feedPostService) {
+        this.feedPostService = feedPostService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
+        return ResponseEntity.ok(feedPostService.getAllPosts());
     }
 
 }
