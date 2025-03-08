@@ -14,8 +14,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class FeedPost {
-    
-    @Field("postId")
+
+    @Id
     private String postId;
 
     private String userId;

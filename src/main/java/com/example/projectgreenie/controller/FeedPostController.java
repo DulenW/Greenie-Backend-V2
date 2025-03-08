@@ -94,7 +94,8 @@ public class FeedPostController {
     // Like a post
     @PutMapping("/{postId}/like")
     public ResponseEntity<?> likePost(@PathVariable("postId") String postId) {
-        FeedPost post = feedPostRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post not found"));
+        FeedPost post = feedPostRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
         post.setLikes(post.getLikes() + 1);
         feedPostRepository.save(post);
         return ResponseEntity.ok("Post liked successfully");

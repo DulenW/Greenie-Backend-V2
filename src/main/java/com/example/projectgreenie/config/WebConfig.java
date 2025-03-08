@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/")
-                .allowedOrigins("https://test.greenie.dizzpy.dev","http://localhost:5173") // Frontend URL (React app)
+                .allowedOrigins("https://test.greenie.dizzpy.dev","http://localhost:5174") // Frontend URL (React app)
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
                 .allowCredentials(true);
