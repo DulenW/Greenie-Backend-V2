@@ -1,5 +1,6 @@
 package com.example.projectgreenie.controller;
 
+import com.example.projectgreenie.dto.LoginResponseDTO;
 import com.example.projectgreenie.model.User;
 import com.example.projectgreenie.security.JwtUtil;
 import com.example.projectgreenie.service.UserService;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -41,13 +43,16 @@ public class AuthController {
         boolean authenticated = userService.authenticate(email, password);
         if (authenticated) {
             String token = jwtUtil.generateToken(email);
-            Map<String, String> response = new HashMap<>();
-            response.put("token", token);
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(401).body("Invalid credentials");
+            
+            // Get user data
+            Optional<User> userOpt = userService.getUserByEmail(email);
+            if (userOpt.isPresent()) {
+                Map<String, String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("userId", userOpt.get().getId());
+                return ResponseEntity.ok(response);
+            }
         }
+        return ResponseEntity.status(401).body("Invalid credentials");
     }
-
-
 }
