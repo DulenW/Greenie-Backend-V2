@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Setter
@@ -21,7 +22,7 @@ public class FeedPost {
     private String userId;
     private String content;
     private String image;
-    private long timestamp;
+//    private LocalDateTime timestamp;
 
     private int likes;
     private List<String> commentIds;

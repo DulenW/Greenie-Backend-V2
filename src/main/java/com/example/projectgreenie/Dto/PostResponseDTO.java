@@ -2,7 +2,6 @@ package com.example.projectgreenie.Dto;
 
 
 import lombok.*;
-
 import java.util.List;
 
 @Getter
@@ -20,7 +19,8 @@ public class PostResponseDTO {
     private String description;
     private String image;
     private int likes;
-    private List<String> commentIds;
-    private long timestamp;
+    private int commentCount;
+    private List<String> commentIds; // Ensure this exists
+//  private LocalDateTime timestamp;
 
 }
