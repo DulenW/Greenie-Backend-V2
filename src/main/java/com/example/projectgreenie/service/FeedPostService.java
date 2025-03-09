@@ -4,7 +4,7 @@ import com.example.projectgreenie.dto.CommentResponseDTO;
 import com.example.projectgreenie.dto.PostResponseDTO;
 import com.example.projectgreenie.Dto.UserDTO;
 import com.example.projectgreenie.model.FeedPost;
-import com.example.projectgreenie.repository.CommentRepository;
+//import com.example.projectgreenie.repository.CommentRepository;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import com.example.projectgreenie.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
