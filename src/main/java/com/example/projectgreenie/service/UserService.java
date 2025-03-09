@@ -60,4 +60,9 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
+    public Optional<Integer> getUserPoints(String userId) {
+        return userRepository.findById(userId)
+                .map(User::getPointsCount);
+    }
 }

@@ -37,6 +37,7 @@ public class WebSecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/register",
                                 "/api/users/{id}",
+                                "/api/users/{userId}/points",  // Add this line
                                 "/api/users/all",
                                 // Shop endpoints
                                 "/api/products/**",
