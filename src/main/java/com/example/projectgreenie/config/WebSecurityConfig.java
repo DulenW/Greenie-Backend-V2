@@ -49,7 +49,8 @@ public class WebSecurityConfig {
                                 //Challenge endpoints
                                 "/api/challenges/create",
                                 "api/challenges/all",
-                                "/api/challenges/{challengeId}"
+                                "/api/challenges/{challengeId}",
+                                "/api/leaderboard"  // Add this line
                         ).permitAll()
                         // Challenges API
                         .requestMatchers("/api/challenges/create").authenticated()
