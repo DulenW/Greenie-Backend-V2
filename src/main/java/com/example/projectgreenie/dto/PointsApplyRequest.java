@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class PointsApplyRequest {
     private String userId;
-    private double cartTotal; // renamed from totalAmount for clarity
+    private double cartTotal;
     private int pointsToRedeem;
 }

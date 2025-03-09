@@ -1,6 +1,6 @@
 package com.example.projectgreenie.service;
 
-import com.example.projectgreenie.Dto.PostResponseDTO;
+import com.example.projectgreenie.dto.PostResponseDTO;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import org.springframework.stereotype.Service;
 
