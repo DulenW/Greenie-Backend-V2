@@ -1,6 +1,6 @@
 package com.example.projectgreenie.controller;
 
-import com.example.projectgreenie.Dto.PostResponseDTO;
+import com.example.projectgreenie.dto.PostResponseDTO;
 import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import com.example.projectgreenie.service.AuthService;

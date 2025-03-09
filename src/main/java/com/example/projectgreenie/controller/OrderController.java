@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
+import com.example.projectgreenie.model.Order;
+import com.example.projectgreenie.repository.OrderRepository;
+import java.time.Instant;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -16,9 +20,11 @@ import java.util.Map;
 public class OrderController {
 
     private final UserService userService;
+    private final OrderRepository orderRepository;
 
-    public OrderController(UserService userService) {
+    public OrderController(UserService userService, OrderRepository orderRepository) {
         this.userService = userService;
+        this.orderRepository = orderRepository;
     }
 
     @PostMapping("/apply-points")
@@ -84,5 +90,68 @@ public class OrderController {
                     }
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/place")
+    public ResponseEntity<?> placeOrder(@RequestBody com.example.projectgreenie.dto.OrderRequestDTO request) {
+        log.info("Received order request: {}", request);
+
+        // Validate order ID uniqueness
+        if (orderRepository.existsByOrderId(request.getOrderId())) {
+            return ResponseEntity.badRequest().body("Order ID already exists");
+        }
+
+        // Validate user exists and get current points
+        Optional<Integer> currentPointsOpt = userService.getUserPoints(request.getUserId());
+        if (currentPointsOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
+
+        // Validate if user has enough points
+        int currentPoints = currentPointsOpt.get();
+        if (currentPoints < request.getPointsApplied()) {
+            return ResponseEntity.badRequest().body("Insufficient points balance");
+        }
+
+        // Validate total amount calculation
+        double expectedTotal = request.getSubtotal() - request.getPointsApplied();
+        if (Math.abs(expectedTotal - request.getTotalAmount()) > 0.01) {
+            return ResponseEntity.badRequest().body("Invalid total amount calculation");
+        }
+
+        try {
+            // Create and save order
+            Order order = new Order();
+            order.setOrderId(request.getOrderId());
+            order.setUserId(request.getUserId());
+            order.setCartItems(request.getCartItems());
+            order.setSubtotal(request.getSubtotal());
+            order.setPointsApplied(request.getPointsApplied());
+            order.setTotalAmount(request.getTotalAmount());
+            order.setShippingAddress(request.getShippingAddress());
+            order.setCreatedAt(request.getCreatedAt() != null ? request.getCreatedAt() : Instant.now());
+            order.setStatus("PENDING");
+
+            Order savedOrder = orderRepository.save(order);
+
+            // Update user's points balance
+            int remainingPoints = currentPoints - request.getPointsApplied();
+            if (!userService.updateUserPoints(request.getUserId(), remainingPoints)) {
+                log.error("Failed to update user points balance");
+                // Consider rolling back the order here if points update fails
+                orderRepository.delete(savedOrder);
+                return ResponseEntity.internalServerError()
+                        .body("Error updating points balance");
+            }
+
+            log.info("Order saved successfully: {}, Points deducted: {}, Remaining points: {}", 
+                    savedOrder.getOrderId(), request.getPointsApplied(), remainingPoints);
+
+            return ResponseEntity.ok(savedOrder);
+        } catch (Exception e) {
+            log.error("Error saving order", e);
+            return ResponseEntity.internalServerError()
+                    .body("Error processing order: " + e.getMessage());
+        }
     }
 }

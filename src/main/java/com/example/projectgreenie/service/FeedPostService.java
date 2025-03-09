@@ -1,7 +1,7 @@
 package com.example.projectgreenie.service;
 
-import com.example.projectgreenie.Dto.CommentResponseDTO;
-import com.example.projectgreenie.Dto.PostResponseDTO;
+import com.example.projectgreenie.dto.CommentResponseDTO;
+import com.example.projectgreenie.dto.PostResponseDTO;
 import com.example.projectgreenie.Dto.UserDTO;
 import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.CommentRepository;

@@ -1,4 +1,4 @@
-package com.example.projectgreenie.Dto;
+package com.example.projectgreenie.dto;
 
 import lombok.Builder;
 import lombok.Data;
