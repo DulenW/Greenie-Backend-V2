@@ -38,7 +38,8 @@ public class WebSecurityConfig {
                                 "/api/auth/register",
                                 "/api/users/{id}",
                                 "/api/users/{userId}/points",
-                                "/api/order/apply-points",  // Add this line
+                                "/api/order/apply-points",
+                                "/api/order/place",  // Add this line
                                 "/api/users/all",
                                 // Shop endpoints
                                 "/api/products/**",
