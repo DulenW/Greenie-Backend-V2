@@ -1,8 +1,5 @@
 package com.example.projectgreenie.model;
 
-
-
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
@@ -11,7 +8,7 @@ import java.time.LocalDateTime;
 public class ProofSubmission {
     @Id
     private String proofID;
-    private String submission;
+
     private String challengeID;
     private String challengeName;
     private String userId;
@@ -20,16 +17,17 @@ public class ProofSubmission {
     private String imageUrl;
     private String description;
     private LocalDateTime submittedAt;
+    private String aiResponse; // New Field to store AI response
 
     // Constructors
     public ProofSubmission() {}
 
-    public ProofSubmission(String proofID, String submission, String challengeID,
+    public ProofSubmission(String proofID, String challengeID,
                            String challengeName, String userId, String username,
                            String status, String imageUrl, String description,
-                           LocalDateTime submittedAt) {
+                           LocalDateTime submittedAt, String aiResponse) {
         this.proofID = proofID;
-        this.submission = submission;
+
         this.challengeID = challengeID;
         this.challengeName = challengeName;
         this.userId = userId;
@@ -38,14 +36,13 @@ public class ProofSubmission {
         this.imageUrl = imageUrl;
         this.description = description;
         this.submittedAt = submittedAt;
+        this.aiResponse = aiResponse;
     }
 
     // Getters and Setters
     public String getProofID() { return proofID; }
     public void setProofID(String proofID) { this.proofID = proofID; }
 
-    public String getSubmission() { return submission; }
-    public void setSubmission(String submission) { this.submission = submission; }
 
     public String getChallengeID() { return challengeID; }
     public void setChallengeID(String challengeID) { this.challengeID = challengeID; }
@@ -70,4 +67,7 @@ public class ProofSubmission {
 
     public LocalDateTime getSubmittedAt() { return submittedAt; }
     public void setSubmittedAt(LocalDateTime submittedAt) { this.submittedAt = submittedAt; }
+
+    public String getAiResponse() { return aiResponse; }
+    public void setAiResponse(String aiResponse) { this.aiResponse = aiResponse; }
 }
