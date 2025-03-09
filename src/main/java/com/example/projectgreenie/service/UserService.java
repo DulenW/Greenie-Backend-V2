@@ -65,4 +65,12 @@ public class UserService {
         return userRepository.findById(userId)
                 .map(User::getPointsCount);
     }
+
+    public boolean updateUserPoints(String userId, int newPoints) {
+        return getUserById(userId).map(user -> {
+            user.setPointsCount(newPoints);
+            userRepository.save(user);
+            return true;
+        }).orElse(false);
+    }
 }
