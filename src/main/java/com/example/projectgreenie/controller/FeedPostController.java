@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.time.LocalDateTime;
 import com.example.projectgreenie.dto.CreatePostRequest;
+import java.time.format.DateTimeFormatter;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = {"http://localhost:5173", "https://test.greenie.dizzpy.dev"})
 @RestController
@@ -42,6 +45,29 @@ public class FeedPostController {
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+    private String generateUniquePostId() {
+        LocalDateTime now = LocalDateTime.now();
+        String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String baseId = "POST-" + dateStr + "-";
+        
+        // Get all posts for today
+        List<FeedPost> todaysPosts = feedPostRepository.findByPostIdStartingWith(baseId);
+        
+        // Find next available number
+        int nextNum = 1;
+        if (!todaysPosts.isEmpty()) {
+            Set<Integer> usedNums = todaysPosts.stream()
+                .map(post -> Integer.parseInt(post.getPostId().substring(post.getPostId().lastIndexOf("-") + 1)))
+                .collect(Collectors.toSet());
+            
+            while (usedNums.contains(nextNum)) {
+                nextNum++;
+            }
+        }
+        
+        return String.format("%s%03d", baseId, nextNum);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> createPost(
             @RequestParam("userId") String userId,
@@ -49,8 +75,15 @@ public class FeedPostController {
             @RequestParam("content") String content) {
 
         try {
-            // Remove auth check since userId comes from frontend
-            log.info("Creating post for user: {}", userId);
+            // Generate unique post ID
+            String postId = generateUniquePostId();
+            
+            // Verify uniqueness (double-check)
+            while (feedPostRepository.existsByPostId(postId)) {
+                postId = generateUniquePostId();
+            }
+
+            log.info("Creating post with ID: {} for user: {}", postId, userId);
 
             // Process image if provided
             String base64Image = null;
@@ -63,7 +96,8 @@ public class FeedPostController {
             }
 
             FeedPost post = FeedPost.builder()
-                .postId(UUID.randomUUID().toString())
+                .id(UUID.randomUUID().toString())
+                .postId(postId)  
                 .userId(userId)
                 .content(content)
                 .image(base64Image)
@@ -75,7 +109,7 @@ public class FeedPostController {
             FeedPost savedPost = feedPostRepository.save(post);
 
             return ResponseEntity.ok(Map.of(
-                "postId", savedPost.getPostId(),
+                "postId", savedPost.getPostId(), 
                 "content", savedPost.getContent(),
                 "imageUrl", savedPost.getImage(),
                 "createdAt", savedPost.getTimestamp()

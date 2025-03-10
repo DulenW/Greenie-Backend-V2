@@ -16,6 +16,10 @@ import java.util.List;
 @Builder
 public class FeedPost {
     @Id
+    // meka mongo id ek
+    private String id;
+
+    // custom post id eka
     private String postId;
     private String userId;
     private String content;
