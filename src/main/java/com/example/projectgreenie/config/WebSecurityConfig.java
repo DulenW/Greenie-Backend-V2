@@ -36,7 +36,9 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/posts/create"  // Add this line to allow post creation without auth
+                                "/api/posts/create", // Add this line to allow post creation without auth
+                                "/api/posts/all",
+                                "/api/posts/{postId}/like"
                         ).permitAll()
                         .requestMatchers("/api/posts/**").authenticated() // Require authentication for posts
                         .requestMatchers(
@@ -53,7 +55,8 @@ public class WebSecurityConfig {
                                 //Challenge endpoints
                                 "/api/challenges/create",
                                 "api/challenges/all",
-                                "/api/challenges/{challengeId}"
+                                "/api/challenges/{challengeId}",
+                                "/api/leaderboard"  // Add this line
                         ).permitAll()
                         // Challenges API
                         .requestMatchers("/api/challenges/create").authenticated()
@@ -68,6 +71,7 @@ public class WebSecurityConfig {
                         // Feed Post
                         .requestMatchers("/api/posts").permitAll() // create post
                         .requestMatchers("/api/posts/{postId}/like").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
@@ -83,7 +87,7 @@ public class WebSecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5175"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization")); // Ensure frontend can access the token

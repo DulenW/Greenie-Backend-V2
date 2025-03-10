@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = {"http://localhost:5173", "https://test.greenie.dizzpy.dev"})
+@CrossOrigin(origins = {"http://localhost:5175", "https://test.greenie.dizzpy.dev"})
 @RestController
 @RequestMapping("/api/posts")
 @Slf4j
@@ -154,7 +154,7 @@ public class FeedPostController {
 
 
     //Get All Posts API
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
         return ResponseEntity.ok(feedPostService.getAllPosts());
     }
