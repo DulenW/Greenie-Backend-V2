@@ -1,12 +1,10 @@
 package com.example.projectgreenie.service;
 
-import com.example.projectgreenie.dto.CommentResponseDTO;
 import com.example.projectgreenie.dto.PostResponseDTO;
-import com.example.projectgreenie.Dto.UserDTO;
+import com.example.projectgreenie.dto.UserDTO;
 import com.example.projectgreenie.model.FeedPost;
-//import com.example.projectgreenie.repository.CommentRepository;
 import com.example.projectgreenie.repository.FeedPostRepository;
-import com.example.projectgreenie.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -20,6 +18,7 @@ public class FeedPostService {
     private final FeedPostRepository feedPostRepository;
     private final RestTemplate restTemplate;
 
+    @Autowired
     public FeedPostService(FeedPostRepository feedPostRepository, RestTemplate restTemplate) {
         this.feedPostRepository = feedPostRepository;
         this.restTemplate = restTemplate;
@@ -27,16 +26,18 @@ public class FeedPostService {
 
     public List<PostResponseDTO> getAllPosts() {
         List<FeedPost> posts = feedPostRepository.findAll();
-        String userApiUrl = "http://localhost:8080/api/users/"; // Change to actual backend URL
+        String userApiUrl = "http://localhost:8080/api/users/";
 
         return posts.stream().map(post -> {
             String fullName = "Unknown";
             String username = "Unknown";
             String profileImage = "";
 
-            // Fetch user details using userId
             try {
-                ResponseEntity<UserDTO> response = restTemplate.getForEntity(userApiUrl + post.getUserId(), UserDTO.class);
+                ResponseEntity<UserDTO> response = restTemplate.getForEntity(
+                    userApiUrl + post.getUserId(), 
+                    UserDTO.class
+                );
                 if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                     UserDTO user = response.getBody();
                     fullName = user.getFullName();
@@ -57,9 +58,7 @@ public class FeedPostService {
                     .image(post.getImage())
                     .likes(post.getLikes())
                     .commentIds(post.getCommentIds())
-//                    .timestamp(post.getTimestamp())
                     .build();
         }).collect(Collectors.toList());
     }
-
 }

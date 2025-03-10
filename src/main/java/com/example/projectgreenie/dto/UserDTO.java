@@ -1,12 +1,10 @@
-package com.example.projectgreenie.Dto;
+package com.example.projectgreenie.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class UserDTO {
-    private String id; // User ID
+    private String id;
     private String fullName;
     private String username;
     private String profileImage;

@@ -5,6 +5,7 @@ import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import com.example.projectgreenie.service.AuthService;
 import com.example.projectgreenie.service.FeedPostService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,61 +20,71 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.time.LocalDateTime;
+import com.example.projectgreenie.dto.CreatePostRequest;
 
 @CrossOrigin(origins = {"http://localhost:5173", "https://test.greenie.dizzpy.dev"})
 @RestController
 @RequestMapping("/api/posts")
+@Slf4j
 public class FeedPostController {
 
     @Autowired
     private FeedPostRepository feedPostRepository;
 
     @Autowired
-    private AuthService authService; // ✅ Inject AuthService to get logged-in user
+    private AuthService authService;
+
+    @Autowired
+    private FeedPostService feedPostService;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-    @PostMapping(consumes = "multipart/form-data")
+    @PostMapping("/create")
     public ResponseEntity<?> createPost(
-            @RequestParam("image") MultipartFile imageFile,
+            @RequestParam("userId") String userId,
+            @RequestParam(required = false) MultipartFile image,
             @RequestParam("content") String content) {
 
         try {
-            // ✅ Get actual logged-in user ID from JWT
-            String userId = authService.getLoggedInUserId();
-            if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            // Remove auth check since userId comes from frontend
+            log.info("Creating post for user: {}", userId);
+
+            // Process image if provided
+            String base64Image = null;
+            if (image != null && !image.isEmpty()) {
+                if (image.getSize() > MAX_FILE_SIZE) {
+                    return ResponseEntity.badRequest()
+                        .body(Map.of("error", "File size must not exceed 5MB"));
+                }
+                base64Image = compressAndConvertToBase64(image);
             }
 
-            // ✅ Validate file size
-            if (imageFile.getSize() > MAX_FILE_SIZE) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File size must not exceed 5MB");
-            }
+            FeedPost post = FeedPost.builder()
+                .postId(UUID.randomUUID().toString())
+                .userId(userId)
+                .content(content)
+                .image(base64Image)
+                .timestamp(LocalDateTime.now())
+                .likes(0)
+                .commentIds(new ArrayList<>())
+                .build();
 
-            // ✅ Validate image format
-            if (!isValidImageFormat(imageFile)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid image format. Only JPG, PNG, and JPEG are allowed.");
-            }
+            FeedPost savedPost = feedPostRepository.save(post);
 
-            // ✅ Compress and encode image to Base64
-            String base64Image = compressAndConvertToBase64(imageFile);
+            return ResponseEntity.ok(Map.of(
+                "postId", savedPost.getPostId(),
+                "content", savedPost.getContent(),
+                "imageUrl", savedPost.getImage(),
+                "createdAt", savedPost.getTimestamp()
+            ));
 
-            // ✅ Create a new post
-            FeedPost post = new FeedPost();
-            post.setPostId(UUID.randomUUID().toString());
-            post.setUserId(userId); // ✅ Set actual logged-in user ID
-            post.setContent(content);
-            post.setImage(base64Image);
-//          post.setTimestamp(LocalDateTime.ofInstant(Instant.ofEpochMilli(postTimestampLong), ZoneOffset.UTC));
-            // ✅ Save to database
-            feedPostRepository.save(post);
-
-            return ResponseEntity.ok("Post created successfully");
-
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing image");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving post: " + e.getMessage());
+            log.error("Error creating post: ", e);
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Error creating post: " + e.getMessage()));
         }
     }
 
@@ -109,12 +120,6 @@ public class FeedPostController {
 
 
     //Get All Posts API
-    private final FeedPostService feedPostService;
-
-    public FeedPostController(FeedPostService feedPostService) {
-        this.feedPostService = feedPostService;
-    }
-
     @GetMapping
     public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
         return ResponseEntity.ok(feedPostService.getAllPosts());

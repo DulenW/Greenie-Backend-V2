@@ -36,6 +36,10 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
+                                "/api/posts/create"  // Add this line to allow post creation without auth
+                        ).permitAll()
+                        .requestMatchers("/api/posts/**").authenticated() // Require authentication for posts
+                        .requestMatchers(
                                 "/api/users/{id}",
                                 "/api/users/{userId}/points",
                                 "/api/order/apply-points",
@@ -49,8 +53,7 @@ public class WebSecurityConfig {
                                 //Challenge endpoints
                                 "/api/challenges/create",
                                 "api/challenges/all",
-                                "/api/challenges/{challengeId}",
-                                "/api/leaderboard"  // Add this line
+                                "/api/challenges/{challengeId}"
                         ).permitAll()
                         // Challenges API
                         .requestMatchers("/api/challenges/create").authenticated()
