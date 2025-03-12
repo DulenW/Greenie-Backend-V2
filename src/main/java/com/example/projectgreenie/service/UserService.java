@@ -53,7 +53,24 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public Optional<Integer> getUserPoints(String userId) {
+        return userRepository.findById(userId)
+                .map(User::getPointsCount);
+    }
+
+    public boolean updateUserPoints(String userId, int newPoints) {
+        return getUserById(userId).map(user -> {
+            user.setPointsCount(newPoints);
+            userRepository.save(user);
+            return true;
+        }).orElse(false);
     }
 }

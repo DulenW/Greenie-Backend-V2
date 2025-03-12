@@ -4,7 +4,6 @@ import com.example.projectgreenie.model.User;
 import com.example.projectgreenie.security.JwtUtil;
 import com.example.projectgreenie.service.UserService;
 import com.example.projectgreenie.repository.UserRepository;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,17 +48,20 @@ public class AuthController {
                 return ResponseEntity.status(404).body("User not found");
             }
             User user = optionalUser.get();
-
             String token = jwtUtil.generateToken(email);
-            Map<String, String> response = new HashMap<>();
-            response.put("token", token);
-            response.put("role", user.getRole());
-            response.put("_id", user.getId());
 
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(401).body("Invalid credentials");
+            // Merging logic from the conflicted version:
+            Optional<User> userOpt = userService.getUserByEmail(email);
+            if (userOpt.isPresent()) {
+                Map<String, String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("role", user.getRole());
+                response.put("_id", user.getId());
+                response.put("userId", userOpt.get().getId()); // Keeping the user ID return from the other version
+                return ResponseEntity.ok(response);
+            }
         }
+        return ResponseEntity.status(401).body("Invalid credentials");
     }
 
     @PostMapping("/admin/login")
@@ -74,8 +76,8 @@ public class AuthController {
                 return ResponseEntity.status(403).body("Unauthorized");
             }
             User admin = optionalAdmin.get();
-
             String token = jwtUtil.generateToken(email);
+
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
             response.put("role", "ADMIN");

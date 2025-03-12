@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -33,5 +34,12 @@ public class UserController {
         // Remove passwords from response
         users.forEach(user -> user.setPassword(null));
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/{userId}/points")
+    public ResponseEntity<?> getUserPoints(@PathVariable String userId) {
+        return userService.getUserPoints(userId)
+                .map(points -> ResponseEntity.ok(Map.of("points", points)))
+                .orElse(ResponseEntity.notFound().build());
     }
 }
