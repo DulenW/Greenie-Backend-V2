@@ -1,6 +1,5 @@
 package com.example.projectgreenie.model;
 
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -21,13 +20,15 @@ public class User {
     private int pointsCount;
     private List<String> badgesList;
     private List<String> joinedChallenges;
+    private String role; // Added role field (USER or ADMIN)
 
     public User() {}
 
-    public User(String fullName, String email, String password) {
+    public User(String fullName, String email, String password, String role) {
         this.fullName = fullName;
         this.email = email;
         this.password = password;
+        this.role = role; // Assign role (USER or ADMIN)
         this.username = "";
         this.bio = "";
         this.postList = List.of();
@@ -124,5 +125,13 @@ public class User {
 
     public void setJoinedChallenges(List<String> joinedChallenges) {
         this.joinedChallenges = joinedChallenges;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

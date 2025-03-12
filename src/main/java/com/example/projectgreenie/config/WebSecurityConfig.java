@@ -1,6 +1,5 @@
 package com.example.projectgreenie.config;
 
-
 import com.example.projectgreenie.security.JwtAuthenticationFilter;
 import com.example.projectgreenie.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
@@ -33,43 +32,41 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Publicly accessible endpoints (No authentication required)
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/posts/create", // Add this line to allow post creation without auth
+                                "/api/auth/admin/login",
+                                "/api/posts/create", // Allow creating posts without authentication
                                 "/api/posts/all",
-                                "/api/posts/{postId}/like"
-                        ).permitAll()
-                        .requestMatchers("/api/posts/**").authenticated() // Require authentication for posts
-                        .requestMatchers(
+                                "/api/posts/{postId}/like",
                                 "/api/users/{id}",
                                 "/api/users/{userId}/points",
                                 "/api/order/apply-points",
-                                "/api/order/place",  // Add this line
+                                "/api/order/place",  // Added this new endpoint
                                 "/api/users/all",
-                                // Shop endpoints
                                 "/api/products/**",
                                 "/api/cart/**",
                                 "/shop/**",
 
-                                //Challenge endpoints
-                                "/api/challenges/create",
-                                "api/challenges/all",
+                                // Challenge endpoints
+                                "/api/challenges/all",
                                 "/api/challenges/{challengeId}",
-                                "/api/leaderboard"  // Add this line
+                                "/api/leaderboard",  // Added this new endpoint
+                                "/api/proof/submit",
+                                "/api/proof/all",
+                                "/api/proof/{id}"
                         ).permitAll()
-                        // Challenges API
-                        .requestMatchers("/api/challenges/create").authenticated()
-                        .requestMatchers("/api/challenges/all").authenticated()
-                        .requestMatchers("/api/challenges/{challengeId}").authenticated()
 
-                        //Proof API
+                        // Protected Endpoints (Require Authentication)
+                        .requestMatchers("/api/challenges/create").authenticated()
                         .requestMatchers("/api/proof/").authenticated()
-                        .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
-                        .requestMatchers("/api/proof/submit" , "/api/proof/all" , "/api/proof/{id}").permitAll()
+
+                        // Admin-Only Endpoints (Requires ADMIN role)
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN") // Secure admin routes
 
                         // Feed Post
-                        .requestMatchers("/api/posts/create").permitAll() // create post
+                        .requestMatchers("/api/posts/create").permitAll() // Allow creating posts without authentication
                         .requestMatchers("/api/posts/{postId}/like").permitAll()
 
                         .anyRequest().authenticated()
@@ -87,10 +84,10 @@ public class WebSecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:5191", "http://localhost:5173")); // Merged both versions
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setExposedHeaders(List.of("Authorization")); // Ensure frontend can access the token
+        config.setExposedHeaders(List.of("Authorization")); // Allow frontend to read the token
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -102,5 +99,4 @@ public class WebSecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
-
 }
