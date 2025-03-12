@@ -59,11 +59,8 @@ public class ProductController {
     @PostMapping("/add")
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
         try {
-            // if already have increese ++
-            Product existingProduct = productRepository.findByProductID(product.getProductID());
-            if (existingProduct != null) {
-                product.setProductID(getNextAvailableProductID());
-            }
+            // Always generate a new product ID
+            product.setProductID(getNextAvailableProductID());
 
             // Save the product
             Product savedProduct = productRepository.save(product);
