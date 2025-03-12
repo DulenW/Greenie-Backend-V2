@@ -16,13 +16,8 @@ public class Comment {
     @Id
     private String id;
 
-    private String postId;  // Ensure this field exists
-
-    private String content;
-
-    private String authorId;
-
-//    private LocalDateTime createdAt;
-
-    // getters and setters
+    private String postId;
+    private String userId;
+    private String comment;
+    private LocalDateTime timestamp;
 }

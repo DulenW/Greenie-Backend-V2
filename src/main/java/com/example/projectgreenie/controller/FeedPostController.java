@@ -1,9 +1,12 @@
 package com.example.projectgreenie.controller;
 
+import com.example.projectgreenie.dto.CommentResponseDTO;
 import com.example.projectgreenie.dto.PostResponseDTO;
+import com.example.projectgreenie.model.Comment;
 import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import com.example.projectgreenie.service.AuthService;
+import com.example.projectgreenie.service.CommentService;
 import com.example.projectgreenie.service.FeedPostService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +160,26 @@ public class FeedPostController {
     @GetMapping("/all")
     public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
         return ResponseEntity.ok(feedPostService.getAllPosts());
+    }
+
+
+    //Create Comment
+    private final CommentService commentService;
+
+    @Autowired
+    public FeedPostController(CommentService commentService) {
+        this.commentService = commentService;
+    }
+
+    @PostMapping("/{postId}/comments/create")
+    public ResponseEntity<CommentResponseDTO> createComment(
+            @PathVariable String postId,
+            @RequestHeader("userId") String userId, // Get logged-in user ID from the header
+            @RequestBody String commentText) {  // The comment body
+
+        // Call the service to create the comment
+        CommentResponseDTO newComment = commentService.createComment(postId, userId, commentText);
+        return ResponseEntity.ok(newComment);  // Return the CommentResponseDTO
     }
 
 }
