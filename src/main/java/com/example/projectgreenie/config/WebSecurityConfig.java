@@ -1,5 +1,6 @@
 package com.example.projectgreenie.config;
 
+
 import com.example.projectgreenie.security.JwtAuthenticationFilter;
 import com.example.projectgreenie.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
@@ -32,45 +35,48 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Publicly accessible endpoints (No authentication required)
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/auth/admin/login",
-                                "/api/posts/create", // Allow creating posts without authentication
+                                "/api/posts/create", // Add this line to allow post creation without auth
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
+                                "/api/admin/register"  // Add this line
+                        ).permitAll()
+                        .requestMatchers("/api/posts/**").authenticated() // Require authentication for posts
+                        .requestMatchers(
                                 "/api/users/{id}",
                                 "/api/users/{userId}/points",
                                 "/api/order/apply-points",
-                                "/api/order/place",  // Added this new endpoint
+                                "/api/order/place",  // Add this line
                                 "/api/users/all",
+                                // Shop endpoints
                                 "/api/products/**",
                                 "/api/cart/**",
                                 "/shop/**",
 
-                                "/api/posts/{postId}/comments/create",
-
-                                // Challenge endpoints
-                                "/api/challenges/all",
+                                //Challenge endpoints
+                                "/api/challenges/create",
+                                "api/challenges/all",
                                 "/api/challenges/{challengeId}",
-                                "/api/leaderboard",  // Added this new endpoint
-                                "/api/proof/submit",
-                                "/api/proof/all",
-                                "/api/proof/{id}"
+                                "/api/leaderboard"  // Add this line
                         ).permitAll()
-
-                        // Protected Endpoints (Require Authentication)
+                        // Challenges API
                         .requestMatchers("/api/challenges/create").authenticated()
-                        .requestMatchers("/api/proof/").authenticated()
+                        .requestMatchers("/api/challenges/all").authenticated()
+                        .requestMatchers("/api/challenges/{challengeId}").authenticated()
 
-                        // Admin-Only Endpoints (Requires ADMIN role)
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN") // Secure admin routes
+                        //Proof API
+                        .requestMatchers("/api/proof/").authenticated()
+                        .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
+                        .requestMatchers("/api/proof/submit" , "/api/proof/all" , "/api/proof/{id}").permitAll()
 
                         // Feed Post
-                        .requestMatchers("/api/posts/create").permitAll() // Allow creating posts without authentication
-                        .requestMatchers("/api/posts/{postId}/like").permitAll()
-                        .requestMatchers("/api/posts/{postId}/comments/create").permitAll()
+                        .requestMatchers("/api/posts").permitAll() // create post
+                        .requestMatchers("/api.posts/{postId}/like").permitAll()
+
+                        // Add admin specific security
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
@@ -87,10 +93,10 @@ public class WebSecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5191", "http://localhost:5173")); // Merged both versions
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setExposedHeaders(List.of("Authorization")); // Allow frontend to read the token
+        config.setExposedHeaders(List.of("Authorization")); // Ensure frontend can access the token
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -102,4 +108,10 @@ public class WebSecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
 }

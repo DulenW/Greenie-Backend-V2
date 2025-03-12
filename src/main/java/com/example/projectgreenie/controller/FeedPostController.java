@@ -1,12 +1,9 @@
 package com.example.projectgreenie.controller;
 
-import com.example.projectgreenie.dto.CommentResponseDTO;
 import com.example.projectgreenie.dto.PostResponseDTO;
-import com.example.projectgreenie.model.Comment;
 import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import com.example.projectgreenie.service.AuthService;
-import com.example.projectgreenie.service.CommentService;
 import com.example.projectgreenie.service.FeedPostService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +23,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.time.LocalDateTime;
-
 import com.example.projectgreenie.dto.CreatePostRequest;
-
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5175", "https://test.greenie.dizzpy.dev"})
 @RestController
 @RequestMapping("/api/posts")
 @Slf4j
@@ -54,22 +49,22 @@ public class FeedPostController {
         LocalDateTime now = LocalDateTime.now();
         String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String baseId = "POST-" + dateStr + "-";
-
+        
         // Get all posts for today
         List<FeedPost> todaysPosts = feedPostRepository.findByPostIdStartingWith(baseId);
-
+        
         // Find next available number
         int nextNum = 1;
         if (!todaysPosts.isEmpty()) {
             Set<Integer> usedNums = todaysPosts.stream()
-                    .map(post -> Integer.parseInt(post.getPostId().substring(post.getPostId().lastIndexOf("-") + 1)))
-                    .collect(Collectors.toSet());
-
+                .map(post -> Integer.parseInt(post.getPostId().substring(post.getPostId().lastIndexOf("-") + 1)))
+                .collect(Collectors.toSet());
+            
             while (usedNums.contains(nextNum)) {
                 nextNum++;
             }
         }
-
+        
         return String.format("%s%03d", baseId, nextNum);
     }
 
@@ -82,7 +77,7 @@ public class FeedPostController {
         try {
             // Generate unique post ID
             String postId = generateUniquePostId();
-
+            
             // Verify uniqueness (double-check)
             while (feedPostRepository.existsByPostId(postId)) {
                 postId = generateUniquePostId();
@@ -95,35 +90,35 @@ public class FeedPostController {
             if (image != null && !image.isEmpty()) {
                 if (image.getSize() > MAX_FILE_SIZE) {
                     return ResponseEntity.badRequest()
-                            .body(Map.of("error", "File size must not exceed 5MB"));
+                        .body(Map.of("error", "File size must not exceed 5MB"));
                 }
                 base64Image = compressAndConvertToBase64(image);
             }
 
             FeedPost post = FeedPost.builder()
-                    .id(UUID.randomUUID().toString())
-                    .postId(postId)
-                    .userId(userId)
-                    .content(content)
-                    .image(base64Image)
-                    .timestamp(LocalDateTime.now())
-                    .likes(0)
-                    .commentIds(new ArrayList<>())
-                    .build();
+                .id(UUID.randomUUID().toString())
+                .postId(postId)  
+                .userId(userId)
+                .content(content)
+                .image(base64Image)
+                .timestamp(LocalDateTime.now())
+                .likes(0)
+                .commentIds(new ArrayList<>())
+                .build();
 
             FeedPost savedPost = feedPostRepository.save(post);
 
             return ResponseEntity.ok(Map.of(
-                    "postId", savedPost.getPostId(),
-                    "content", savedPost.getContent(),
-                    "imageUrl", savedPost.getImage(),
-                    "createdAt", savedPost.getTimestamp()
+                "postId", savedPost.getPostId(), 
+                "content", savedPost.getContent(),
+                "imageUrl", savedPost.getImage(),
+                "createdAt", savedPost.getTimestamp()
             ));
 
         } catch (Exception e) {
             log.error("Error creating post: ", e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Error creating post: " + e.getMessage()));
+                .body(Map.of("error", "Error creating post: " + e.getMessage()));
         }
     }
 
@@ -162,26 +157,6 @@ public class FeedPostController {
     @GetMapping("/all")
     public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
         return ResponseEntity.ok(feedPostService.getAllPosts());
-    }
-
-
-    //Create Comment
-    private final CommentService commentService;
-
-    @Autowired
-    public FeedPostController(CommentService commentService) {
-        this.commentService = commentService;
-    }
-
-    @PostMapping("/{postId}/comments/create")
-    public ResponseEntity<CommentResponseDTO> createComment(
-            @PathVariable String postId,
-            @RequestHeader("userId") String userId, // Get logged-in user ID from the header
-            @RequestBody String commentText) {  // The comment body
-
-        // Call the service to create the comment
-        CommentResponseDTO newComment = commentService.createComment(postId, userId, commentText);
-        return ResponseEntity.ok(newComment);  // Return the CommentResponseDTO
     }
 
 }
