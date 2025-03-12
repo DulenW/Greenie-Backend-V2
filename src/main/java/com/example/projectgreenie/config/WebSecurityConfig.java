@@ -69,7 +69,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/proof/submit" , "/api/proof/all" , "/api/proof/{id}").permitAll()
 
                         // Feed Post
-                        .requestMatchers("/api/posts").permitAll() // create post
+                        .requestMatchers("/api/posts/create").permitAll() // create post
                         .requestMatchers("/api/posts/{postId}/like").permitAll()
 
                         .anyRequest().authenticated()
@@ -87,7 +87,7 @@ public class WebSecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5175"));
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization")); // Ensure frontend can access the token

@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = {"http://localhost:5175", "https://test.greenie.dizzpy.dev"})
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/posts")
 @Slf4j
