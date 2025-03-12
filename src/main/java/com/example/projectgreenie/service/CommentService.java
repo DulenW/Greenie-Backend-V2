@@ -35,7 +35,7 @@ public class CommentService {
         comment.setPostId(postId);
         comment.setUserId(userId);
         comment.setComment(commentText);
-        comment.setTimestamp(LocalDateTime.now()); // Using LocalDateTime for timestamp
+//        comment.setTimestamp(LocalDateTime.now()); // Using LocalDateTime for timestamp
 
         // Save comment
         Comment savedComment = commentRepository.save(comment);

@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.time.LocalDateTime;
+
 import com.example.projectgreenie.dto.CreatePostRequest;
+
 import java.time.format.DateTimeFormatter;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,22 +54,22 @@ public class FeedPostController {
         LocalDateTime now = LocalDateTime.now();
         String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String baseId = "POST-" + dateStr + "-";
-        
+
         // Get all posts for today
         List<FeedPost> todaysPosts = feedPostRepository.findByPostIdStartingWith(baseId);
-        
+
         // Find next available number
         int nextNum = 1;
         if (!todaysPosts.isEmpty()) {
             Set<Integer> usedNums = todaysPosts.stream()
-                .map(post -> Integer.parseInt(post.getPostId().substring(post.getPostId().lastIndexOf("-") + 1)))
-                .collect(Collectors.toSet());
-            
+                    .map(post -> Integer.parseInt(post.getPostId().substring(post.getPostId().lastIndexOf("-") + 1)))
+                    .collect(Collectors.toSet());
+
             while (usedNums.contains(nextNum)) {
                 nextNum++;
             }
         }
-        
+
         return String.format("%s%03d", baseId, nextNum);
     }
 
@@ -80,7 +82,7 @@ public class FeedPostController {
         try {
             // Generate unique post ID
             String postId = generateUniquePostId();
-            
+
             // Verify uniqueness (double-check)
             while (feedPostRepository.existsByPostId(postId)) {
                 postId = generateUniquePostId();
@@ -93,35 +95,35 @@ public class FeedPostController {
             if (image != null && !image.isEmpty()) {
                 if (image.getSize() > MAX_FILE_SIZE) {
                     return ResponseEntity.badRequest()
-                        .body(Map.of("error", "File size must not exceed 5MB"));
+                            .body(Map.of("error", "File size must not exceed 5MB"));
                 }
                 base64Image = compressAndConvertToBase64(image);
             }
 
             FeedPost post = FeedPost.builder()
-                .id(UUID.randomUUID().toString())
-                .postId(postId)  
-                .userId(userId)
-                .content(content)
-                .image(base64Image)
-                .timestamp(LocalDateTime.now())
-                .likes(0)
-                .commentIds(new ArrayList<>())
-                .build();
+                    .id(UUID.randomUUID().toString())
+                    .postId(postId)
+                    .userId(userId)
+                    .content(content)
+                    .image(base64Image)
+                    .timestamp(LocalDateTime.now())
+                    .likes(0)
+                    .commentIds(new ArrayList<>())
+                    .build();
 
             FeedPost savedPost = feedPostRepository.save(post);
 
             return ResponseEntity.ok(Map.of(
-                "postId", savedPost.getPostId(), 
-                "content", savedPost.getContent(),
-                "imageUrl", savedPost.getImage(),
-                "createdAt", savedPost.getTimestamp()
+                    "postId", savedPost.getPostId(),
+                    "content", savedPost.getContent(),
+                    "imageUrl", savedPost.getImage(),
+                    "createdAt", savedPost.getTimestamp()
             ));
 
         } catch (Exception e) {
             log.error("Error creating post: ", e);
             return ResponseEntity.internalServerError()
-                .body(Map.of("error", "Error creating post: " + e.getMessage()));
+                    .body(Map.of("error", "Error creating post: " + e.getMessage()));
         }
     }
 

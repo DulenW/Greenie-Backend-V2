@@ -49,6 +49,8 @@ public class WebSecurityConfig {
                                 "/api/cart/**",
                                 "/shop/**",
 
+                                "/api/posts/{postId}/comments/create",
+
                                 // Challenge endpoints
                                 "/api/challenges/all",
                                 "/api/challenges/{challengeId}",
@@ -68,6 +70,7 @@ public class WebSecurityConfig {
                         // Feed Post
                         .requestMatchers("/api/posts/create").permitAll() // Allow creating posts without authentication
                         .requestMatchers("/api/posts/{postId}/like").permitAll()
+                        .requestMatchers("/api/posts/{postId}/comments/create").permitAll()
 
                         .anyRequest().authenticated()
                 )
