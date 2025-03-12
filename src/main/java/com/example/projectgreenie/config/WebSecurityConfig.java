@@ -1,6 +1,5 @@
 package com.example.projectgreenie.config;
 
-
 import com.example.projectgreenie.security.JwtAuthenticationFilter;
 import com.example.projectgreenie.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
@@ -33,34 +32,32 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Publicly accessible endpoints (No authentication required)
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
+                                "/api/auth/admin/login",
                                 "/api/users/{id}",
                                 "/api/users/all",
-                                // Shop endpoints
                                 "/api/products/**",
                                 "/api/cart/**",
                                 "/shop/**",
-
-                                //Challenge endpoints
-                                "/api/challenges/create",
-                                "api/challenges/all",
-                                "/api/challenges/{challengeId}"
+                                "/api/challenges/all",
+                                "/api/challenges/{challengeId}",
+                                "/api/proof/submit",
+                                "/api/proof/all",
+                                "/api/proof/{id}",
+                                "/api/posts",
+                                "/api/posts/{postId}/like"
                         ).permitAll()
-                        // Challenges API
+
+                        // Protected Endpoints (Require Authentication)
                         .requestMatchers("/api/challenges/create").authenticated()
-                        .requestMatchers("/api/challenges/all").authenticated()
-                        .requestMatchers("/api/challenges/{challengeId}").authenticated()
-
-                        //Proof API
                         .requestMatchers("/api/proof/").authenticated()
-                        .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
-                        .requestMatchers("/api/proof/submit" , "/api/proof/all" , "/api/proof/{id}").permitAll()
 
-                        // Feed Post
-                        .requestMatchers("/api/posts").permitAll() // create post
-                        .requestMatchers("/api/posts/{postId}/like").permitAll()
+                        // Admin-Only Endpoints (Requires ADMIN role)
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN") // Secure admin routes
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
@@ -76,10 +73,10 @@ public class WebSecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:5191")); // Ensure frontend access
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setExposedHeaders(List.of("Authorization")); // Ensure frontend can access the token
+        config.setExposedHeaders(List.of("Authorization")); // Allow frontend to read the token
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
