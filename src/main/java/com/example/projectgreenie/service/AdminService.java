@@ -35,8 +35,8 @@ public class AdminService {
         }
 
         Admin admin = Admin.builder()
-                .id(UUID.randomUUID().toString())  // Random MongoDB _id
-                .adminId(generateUniqueAdminId())  // Our custom format ID
+                .id(UUID.randomUUID().toString())
+                .adminId(generateUniqueAdminId())
                 .name(registerDTO.getName())
                 .email(registerDTO.getEmail())
                 .password(passwordEncoder.encode(registerDTO.getPassword()))
@@ -44,5 +44,16 @@ public class AdminService {
                 .build();
 
         return adminRepository.save(admin);
+    }
+
+    public Admin authenticateAdmin(String email, String password) {
+        Admin admin = adminRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Admin not found"));
+            
+        if (!passwordEncoder.matches(password, admin.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+        
+        return admin;
     }
 }

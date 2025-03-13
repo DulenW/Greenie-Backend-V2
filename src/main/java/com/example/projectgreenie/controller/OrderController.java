@@ -12,6 +12,7 @@ import com.example.projectgreenie.model.Order;
 import com.example.projectgreenie.repository.OrderRepository;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -152,6 +153,31 @@ public class OrderController {
             log.error("Error saving order", e);
             return ResponseEntity.internalServerError()
                     .body("Error processing order: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Order>> getAllOrders() {
+        try {
+            List<Order> orders = orderRepository.findAll();
+            return orders.isEmpty() 
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            log.error("Error fetching all orders", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrderByOrderId(@PathVariable String orderId) {
+        try {
+            return orderRepository.findByOrderId(orderId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            log.error("Error fetching order with ID: " + orderId, e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 }
