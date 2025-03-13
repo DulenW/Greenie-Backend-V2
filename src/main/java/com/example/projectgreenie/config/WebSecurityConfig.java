@@ -41,10 +41,11 @@ public class WebSecurityConfig {
                                 "/api/posts/create", // Add this line to allow post creation without auth
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
-
                                 //Comments and Likes in Posts
                                 "/api/posts/{postId}/comments/create",
                                 "/api/posts/{postId}/comments/all",
+                                "/api/posts/{postId}/likes/all",
+                                "/api/posts/{postId}/comments/count",
 
                                 // Admin endpoints
                                 "/api/admin/register",
@@ -89,6 +90,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/posts/{postId}/like").permitAll()
                         .requestMatchers("/api/posts/{postId}/comments/create").permitAll()
                         .requestMatchers("/api/posts/{postId}/comments/all").permitAll()
+                        .requestMatchers("/api/posts/{postId}/likes/all").permitAll()
+                        .requestMatchers("/api/posts/{postId}/like").permitAll()
+                        .requestMatchers("/api/posts/{postId}/comments/count").permitAll()
 
 
                         // Add admin specific security

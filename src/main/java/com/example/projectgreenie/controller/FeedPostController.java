@@ -20,17 +20,13 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Base64;
-import java.util.UUID;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 import java.time.LocalDateTime;
 
 import com.example.projectgreenie.dto.CreatePostRequest;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:5173")
@@ -147,24 +143,44 @@ public class FeedPostController {
     }
 
 
-    // Like a post
+    // API for Like a post
     @PutMapping("/{postId}/like")
     public ResponseEntity<?> likePost(@PathVariable("postId") String postId) {
-        FeedPost post = feedPostRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+        Optional<FeedPost> postOpt = feedPostRepository.findByPostId(postId); // Find by custom postId
+
+        if (postOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Post not found");
+        }
+
+        FeedPost post = postOpt.get();
         post.setLikes(post.getLikes() + 1);
         feedPostRepository.save(post);
+
         return ResponseEntity.ok("Post liked successfully");
     }
 
+    // API for get all like count
+    @GetMapping("/{postId}/likes/all")
+    public ResponseEntity<?> getLikeCount(@PathVariable("postId") String postId) {
+        Optional<FeedPost> postOpt = feedPostRepository.findByPostId(postId); // Find by custom postId
 
-    //Get All Posts API
+        if (postOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Post not found");
+        }
+
+        int likeCount = postOpt.get().getLikes(); // Get like count
+        return ResponseEntity.ok(likeCount); // Return like count
+    }
+
+
+    // API for Get All Posts API
     @GetMapping("/all")
     public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
         return ResponseEntity.ok(feedPostService.getAllPosts());
     }
 
 
+    // Comments APIs
     //Create Comment
     private final CommentService commentService;
 
@@ -173,6 +189,7 @@ public class FeedPostController {
         this.commentService = commentService;
     }
 
+    // API for creating a comment
     @PostMapping("/{postId}/comments/create")
     public ResponseEntity<CommentResponseDTO> createComment(
             @PathVariable String postId,
@@ -184,9 +201,23 @@ public class FeedPostController {
         return ResponseEntity.ok(newComment);  // Return the CommentResponseDTO
     }
 
+    // API for getting all comments
     @GetMapping("/{postId}/comments/all")
     public List<CommentResponseDTO> getComments(@PathVariable String postId) {
         return commentService.getCommentsByPostId(postId);
+    }
+
+    // API for getting comments count
+    @GetMapping("/{postId}/comments/count")
+    public ResponseEntity<?> getCommentCount(@PathVariable("postId") String postId) {
+        Optional<FeedPost> postOpt = feedPostRepository.findByPostId(postId); // Find by custom postId
+
+        if (postOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Post not found");
+        }
+
+        int commentCount = postOpt.get().getCommentIds().size(); // Get comment count
+        return ResponseEntity.ok(commentCount); // Return count
     }
 
 }
