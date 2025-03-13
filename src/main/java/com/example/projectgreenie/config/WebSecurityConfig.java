@@ -41,16 +41,22 @@ public class WebSecurityConfig {
                                 "/api/posts/create", // Add this line to allow post creation without auth
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
-                                "/api/admin/register",  // Add this line
-                                "/api/admin/login"     // Add this line
+
+                                // Admin endpoints
+                                "/api/admin/register",
+                                "/api/admin/login",
+                                "/api/admin/all",
+                                "/api/admin/{adminId}",
+                                "/api/admin/delete/{adminId}"
                         ).permitAll()
                         .requestMatchers("/api/posts/**").authenticated() // Require authentication for posts
                         .requestMatchers(
                                 "/api/users/{id}",
                                 "/api/users/{userId}/points",
                                 "/api/order/apply-points",
-                                "/api/order/place",  // Add this line
+                                "/api/order/place",
                                 "/api/users/all",
+
                                 // Shop endpoints
                                 "/api/products/**",
                                 "/api/cart/**",
@@ -60,9 +66,9 @@ public class WebSecurityConfig {
                                 "/api/challenges/create",
                                 "api/challenges/all",
                                 "/api/challenges/{challengeId}",
-                                "/api/leaderboard",  // Add this line
-                                "/api/order/all",     // Add this line
-                                "/api/order/{orderId}" // Add this line
+                                "/api/leaderboard",
+                                "/api/order/all",
+                                "/api/order/{orderId}"
                         ).permitAll()
                         // Challenges API
                         .requestMatchers("/api/challenges/create").authenticated()

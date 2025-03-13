@@ -6,6 +6,7 @@ import com.example.projectgreenie.repository.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -55,5 +56,22 @@ public class AdminService {
         }
         
         return admin;
+    }
+
+    public List<Admin> getAllAdmins() {
+        return adminRepository.findAll();
+    }
+
+    public void removeAdmin(String adminId) {
+        Admin admin = adminRepository.findByAdminId(adminId)
+            .orElseThrow(() -> new RuntimeException("Admin not found"));
+            
+        // Prevent removing the last admin
+        long adminCount = adminRepository.count();
+        if (adminCount <= 1) {
+            throw new RuntimeException("Cannot remove the last admin");
+        }
+        
+        adminRepository.delete(admin);
     }
 }

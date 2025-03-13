@@ -10,4 +10,5 @@ public interface AdminRepository extends MongoRepository<Admin, String> {
     Optional<Admin> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByAdminId(String adminId);
+    Optional<Admin> findByAdminId(String adminId);
 }
