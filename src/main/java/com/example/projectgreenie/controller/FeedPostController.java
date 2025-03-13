@@ -159,6 +159,27 @@ public class FeedPostController {
         return ResponseEntity.ok("Post liked successfully");
     }
 
+    // API for unlike
+    @PutMapping("/{postId}/unlike")
+    public ResponseEntity<?> unlikePost(@PathVariable("postId") String postId) {
+        Optional<FeedPost> postOpt = feedPostRepository.findByPostId(postId); // Find by custom postId
+
+        if (postOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Post not found");
+        }
+
+        FeedPost post = postOpt.get();
+
+        // Ensure like count does not go below zero
+        if (post.getLikes() > 0) {
+            post.setLikes(post.getLikes() - 1);
+            feedPostRepository.save(post);
+            return ResponseEntity.ok("Post unliked successfully");
+        }
+
+        return ResponseEntity.ok("Post already has 0 likes");
+    }
+
     // API for get all like count
     @GetMapping("/{postId}/likes/all")
     public ResponseEntity<?> getLikeCount(@PathVariable("postId") String postId) {
@@ -219,5 +240,18 @@ public class FeedPostController {
         int commentCount = postOpt.get().getCommentIds().size(); // Get comment count
         return ResponseEntity.ok(commentCount); // Return count
     }
+
+    // API for delete comment
+    @DeleteMapping("/{postId}/{commentId}/comments/delete")
+    public ResponseEntity<?> deleteComment(@PathVariable("postId") String postId,
+                                           @PathVariable("commentId") String commentId) {
+        try {
+            commentService.deleteComment(postId, commentId); // Pass both postId and commentId
+            return ResponseEntity.ok("Comment deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
 
 }

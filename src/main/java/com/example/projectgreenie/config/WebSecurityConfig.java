@@ -46,6 +46,8 @@ public class WebSecurityConfig {
                                 "/api/posts/{postId}/comments/all",
                                 "/api/posts/{postId}/likes/all",
                                 "/api/posts/{postId}/comments/count",
+                                "/api/posts/{postId}/unlike",
+                                "/api/posts/{postId}/{commentId}/comments/delete",
 
                                 // Admin endpoints
                                 "/api/admin/register",
@@ -93,6 +95,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/posts/{postId}/likes/all").permitAll()
                         .requestMatchers("/api/posts/{postId}/like").permitAll()
                         .requestMatchers("/api/posts/{postId}/comments/count").permitAll()
+                        .requestMatchers("/api/posts/{postId}/unlike").permitAll()
+                        .requestMatchers("/api/posts/{postId}/{commentId}/comments/delete").permitAll()
 
 
                         // Add admin specific security
