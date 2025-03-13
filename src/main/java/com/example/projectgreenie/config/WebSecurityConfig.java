@@ -42,6 +42,10 @@ public class WebSecurityConfig {
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
 
+                                //Comments and Likes in Posts
+                                "/api/posts/{postId}/comments/create",
+                                "/api/posts/{postId}/comments/all",
+
                                 // Admin endpoints
                                 "/api/admin/register",
                                 "/api/admin/login",
@@ -82,7 +86,10 @@ public class WebSecurityConfig {
 
                         // Feed Post
                         .requestMatchers("/api/posts").permitAll() // create post
-                        .requestMatchers("/api.posts/{postId}/like").permitAll()
+                        .requestMatchers("/api/posts/{postId}/like").permitAll()
+                        .requestMatchers("/api/posts/{postId}/comments/create").permitAll()
+                        .requestMatchers("/api/posts/{postId}/comments/all").permitAll()
+
 
                         // Add admin specific security
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

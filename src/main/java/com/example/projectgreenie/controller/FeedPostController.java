@@ -184,4 +184,9 @@ public class FeedPostController {
         return ResponseEntity.ok(newComment);  // Return the CommentResponseDTO
     }
 
+    @GetMapping("/{postId}/comments/all")
+    public List<CommentResponseDTO> getComments(@PathVariable String postId) {
+        return commentService.getCommentsByPostId(postId);
+    }
+
 }
