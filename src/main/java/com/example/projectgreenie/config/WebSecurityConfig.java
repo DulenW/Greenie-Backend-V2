@@ -1,6 +1,5 @@
 package com.example.projectgreenie.config;
 
-
 import com.example.projectgreenie.security.JwtAuthenticationFilter;
 import com.example.projectgreenie.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
@@ -38,10 +37,12 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/posts/create", // Add this line to allow post creation without auth
+                                "/api/auth/reset-password",
+                                "/api/auth/set-new-password",
+                                "/api/posts/create",
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
-                                //Comments and Likes in Posts
+                                // Comments and Likes in Posts
                                 "/api/posts/{postId}/comments/create",
                                 "/api/posts/{postId}/comments/all",
                                 "/api/posts/{postId}/likes/all",
@@ -56,7 +57,7 @@ public class WebSecurityConfig {
                                 "/api/admin/{adminId}",
                                 "/api/admin/delete/{adminId}"
                         ).permitAll()
-                        .requestMatchers("/api/posts/**").authenticated() // Require authentication for posts
+                        .requestMatchers("/api/posts/**").authenticated()
                         .requestMatchers(
                                 "/api/users/{id}",
                                 "/api/users/{userId}/points",
@@ -69,26 +70,23 @@ public class WebSecurityConfig {
                                 "/api/cart/**",
                                 "/shop/**",
 
-
                                 "/api/leaderboard",
                                 "/api/order/all",
                                 "/api/order/{orderId}"
                         ).permitAll()
-
 
                         // Challenges API
                         .requestMatchers("/api/challenges/").authenticated()
                         .requestMatchers("/api/challenges/create", "/api/challenges/all", "/api/challenges/{challengeId}" ).permitAll()
                         .requestMatchers("/api/admin/challenges/create", "/api/admin/challenges/all", "/api/admin/challenges/{challengeId}" ).permitAll()
 
-
-                        //Proof API
+                        // Proof API
                         .requestMatchers("/api/proof/").authenticated()
                         .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
-                        .requestMatchers("/api/proof/submit" , "/api/proof/all" , "/api/proof/{id}").permitAll()
+                        .requestMatchers("/api/proof/submit", "/api/proof/all", "/api/proof/{id}").permitAll()
 
                         // Feed Post
-                        .requestMatchers("/api/posts").permitAll() // create post
+                        .requestMatchers("/api/posts").permitAll()
                         .requestMatchers("/api/posts/{postId}/like").permitAll()
                         .requestMatchers("/api/posts/{postId}/comments/create").permitAll()
                         .requestMatchers("/api/posts/{postId}/comments/all").permitAll()
@@ -97,7 +95,6 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/posts/{postId}/comments/count").permitAll()
                         .requestMatchers("/api/posts/{postId}/unlike").permitAll()
                         .requestMatchers("/api/posts/{postId}/{commentId}/comments/delete").permitAll()
-
 
                         // Add admin specific security
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -120,7 +117,7 @@ public class WebSecurityConfig {
         config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setExposedHeaders(List.of("Authorization")); // Ensure frontend can access the token
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -137,5 +134,4 @@ public class WebSecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
