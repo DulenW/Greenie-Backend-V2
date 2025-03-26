@@ -78,7 +78,7 @@ public class WebSecurityConfig {
 
                         // Challenges API
                         .requestMatchers("/api/challenges/").authenticated()
-                        .requestMatchers("/api/challenges/create", "/api/challenges/all", "/api/challenges/{challengeId}" ).permitAll()
+                        .requestMatchers("/api/challenges/create", "/api/challenges/all", "/api/challenges/{id}" ).permitAll()
                         .requestMatchers("/api/admin/challenges/create", "/api/admin/challenges/all", "/api/admin/challenges/{challengeId}" ).permitAll()
 
 

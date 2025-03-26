@@ -32,21 +32,21 @@ public class ChallengeController {
     }
 
     // Get challenge by ID
-    @GetMapping("/{challengeId}")
+    @GetMapping("/{id}")
     public ResponseEntity<Challenge> getChallengeById(@PathVariable("challengeId") int challengeId) {
         Challenge challenge = challengeService.getChallengeById(challengeId);
         return ResponseEntity.ok(challenge);
     }
 
     // Update challenge
-    @PutMapping("/{challengeId}")
+    @PutMapping("/{id}")
     public ResponseEntity<Challenge> updateChallenge(@PathVariable int challengeId, @RequestBody Challenge updatedChallenge) {
         Challenge challenge = challengeService.updateChallenge(challengeId, updatedChallenge);
         return challenge != null ? ResponseEntity.ok(challenge) : ResponseEntity.notFound().build();
     }
 
     // Delete challenge
-    @DeleteMapping("/{challengeId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteChallenge(@PathVariable int challengeId) {
         boolean deleted = challengeService.deleteChallenge(challengeId);
         return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
