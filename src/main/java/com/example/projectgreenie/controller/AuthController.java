@@ -4,10 +4,7 @@ import com.example.projectgreenie.dto.LoginResponseDTO;
 import com.example.projectgreenie.model.User;
 import com.example.projectgreenie.security.JwtUtil;
 import com.example.projectgreenie.service.UserService;
-import com.example.projectgreenie.dto.PasswordResetRequestDTO;
-import com.example.projectgreenie.dto.SetNewPasswordDTO;
-import com.example.projectgreenie.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,18 +19,12 @@ public class AuthController {
 
     private final UserService userService;
     private final JwtUtil jwtUtil;
-    private final AuthService authService;
 
-    @Autowired
-    public AuthController(UserService userService, JwtUtil jwtUtil, AuthService authService) {
+    public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
-        this.authService = authService;
     }
 
-    /**
-     * User Registration
-     */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
@@ -44,9 +35,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * User Login
-     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         String email = credentials.get("email");
@@ -66,23 +54,5 @@ public class AuthController {
             }
         }
         return ResponseEntity.status(401).body("Invalid credentials");
-    }
-
-    /**
-     * Request Password Reset (Send Reset Email)
-     */
-    @PostMapping("/reset-password")
-    public ResponseEntity<String> requestPasswordReset(@RequestBody PasswordResetRequestDTO requestDTO) {
-        String response = authService.sendPasswordResetLink(requestDTO);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Set New Password
-     */
-    @PostMapping("/set-new-password")
-    public ResponseEntity<String> setNewPassword(@RequestBody SetNewPasswordDTO requestDTO) {
-        String response = authService.resetPassword(requestDTO);
-        return ResponseEntity.ok(response);
     }
 }
