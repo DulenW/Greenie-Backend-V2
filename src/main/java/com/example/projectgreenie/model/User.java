@@ -2,40 +2,46 @@ package com.example.projectgreenie.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "users")
 public class User {
 
     @Id
     private String id;
+
     private String fullName;
     private String email;
     private String password;
     private String username;
     private String bio;
-    private List<String> postList;
+    private List<String> postList = new ArrayList<>();
     private String profileImgUrl;
     private int pointsCount;
-    private List<String> badgesList;
-    private List<String> joinedChallenges;
-    private String role; // Added role field (USER or ADMIN)
-
-    public User() {}
+    private List<String> badgesList = new ArrayList<>();
+    private List<String> joinedChallenges = new ArrayList<>();
+    private String role; // USER or ADMIN
 
     public User(String fullName, String email, String password, String role) {
         this.fullName = fullName;
         this.email = email;
         this.password = password;
-        this.role = role; // Assign role (USER or ADMIN)
+        this.role = role;
         this.username = "";
         this.bio = "";
-        this.postList = List.of();
+        this.postList = new ArrayList<>();
         this.profileImgUrl = "https://yourcdn.com/profiles/default.jpg";
         this.pointsCount = 0;
-        this.badgesList = List.of();
-        this.joinedChallenges = List.of();
+        this.badgesList = new ArrayList<>();
+        this.joinedChallenges = new ArrayList<>();
     }
 
     // Getters and Setters
