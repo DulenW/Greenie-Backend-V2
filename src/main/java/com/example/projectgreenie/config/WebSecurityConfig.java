@@ -83,7 +83,7 @@ public class WebSecurityConfig {
                         // Proof API
                         .requestMatchers("/api/proof/").authenticated()
                         .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
-                        .requestMatchers("/api/proof/submit", "/api/proof/all", "/api/proof/{id}").permitAll()
+                        .requestMatchers("/api/proof/submit/{id}", "/api/proof/all", "/api/proof/{id}").permitAll()
 
                         // Feed Post
                         .requestMatchers("/api/posts").permitAll()

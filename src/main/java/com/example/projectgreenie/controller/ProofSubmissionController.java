@@ -23,25 +23,39 @@ public class ProofSubmissionController {
     }
 
     @PostMapping("/submit")
-    public ResponseEntity<ProofSubmission> submitProof(@RequestBody ProofSubmission proof) {
-        proof.setSubmittedAt(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
+    public ResponseEntity<?> submitProof(@RequestBody ProofSubmission proof) {
+        try {
+            proof.setSubmittedAt(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
 
-        // Get AI response
-        String aiResponse = aiService.checkImage(proof.getImageUrl(), proof.getDescription());
-        proof.setAiResponse(aiResponse);
+            // Check if imageUrl or description is missing
+            if (proof.getImageUrl() == null || proof.getImageUrl().isEmpty()) {
+                return ResponseEntity.badRequest().body("Missing image URL");
+            }
+            if (proof.getDescription() == null || proof.getDescription().isEmpty()) {
+                return ResponseEntity.badRequest().body("Missing description");
+            }
 
-        // Determine status based on AI response
-        if (aiResponse.toLowerCase().contains("fake") || aiResponse.toLowerCase().contains("ai-generated")) {
-            proof.setStatus("Issue");
-        } else if (aiResponse.toLowerCase().contains("real") || aiResponse.toLowerCase().contains("genuine")) {
-            proof.setStatus("Verified");
-        } else {
-            proof.setStatus("Issue");
+            // Get AI response
+            String aiResponse = aiService.checkImage(proof.getImageUrl(), proof.getDescription());
+            proof.setAiResponse(aiResponse);
+
+            // Determine status based on AI response
+            if (aiResponse.toLowerCase().contains("fake") || aiResponse.toLowerCase().contains("ai-generated")) {
+                proof.setStatus("Issue");
+            } else if (aiResponse.toLowerCase().contains("real") || aiResponse.toLowerCase().contains("genuine")) {
+                proof.setStatus("Verified");
+            } else {
+                proof.setStatus("Issue");
+            }
+
+            ProofSubmission savedProof = repository.save(proof);
+            return ResponseEntity.ok(savedProof);
+        } catch (Exception e) {
+            e.printStackTrace(); // Log it to console
+            return ResponseEntity.status(500).body("Server Error: " + e.getMessage());
         }
-
-        ProofSubmission savedProof = repository.save(proof);
-        return ResponseEntity.ok(savedProof);
     }
+
 
     // Get all Submissions
     @GetMapping("/all")
