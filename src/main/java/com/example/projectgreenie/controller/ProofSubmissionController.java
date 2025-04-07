@@ -1,3 +1,4 @@
+// === ProofSubmissionController.java ===
 package com.example.projectgreenie.controller;
 
 import com.example.projectgreenie.model.ProofSubmission;
@@ -5,6 +6,7 @@ import com.example.projectgreenie.repository.ProofSubmissionRepository;
 import com.example.projectgreenie.service.OpenRouterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,7 +29,6 @@ public class ProofSubmissionController {
         try {
             proof.setSubmittedAt(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
 
-            // Check if imageUrl or description is missing
             if (proof.getImageUrl() == null || proof.getImageUrl().isEmpty()) {
                 return ResponseEntity.badRequest().body("Missing image URL");
             }
@@ -35,35 +36,30 @@ public class ProofSubmissionController {
                 return ResponseEntity.badRequest().body("Missing description");
             }
 
-            // Get AI response
-            String aiResponse = aiService.checkImage(proof.getImageUrl(), proof.getDescription());
-            proof.setAiResponse(aiResponse);
+            // Call AI service to check the image
+            String aiResult = aiService.checkImage(proof.getImageUrl(), proof.getDescription());
 
-            // Determine status based on AI response
-            if (aiResponse.toLowerCase().contains("fake") || aiResponse.toLowerCase().contains("ai-generated")) {
-                proof.setStatus("Issue");
-            } else if (aiResponse.toLowerCase().contains("real") || aiResponse.toLowerCase().contains("genuine")) {
-                proof.setStatus("Verified");
-            } else {
-                proof.setStatus("Issue");
-            }
+            String[] split = aiResult.split("\\|", 2);
+            String status = split.length > 0 ? split[0].trim() : "Issue";
+            String reason = split.length > 1 ? split[1].trim() : "No explanation.";
 
-            ProofSubmission savedProof = repository.save(proof);
-            return ResponseEntity.ok(savedProof);
+            proof.setStatus(status);
+            proof.setAiResponse(reason);
+
+            ProofSubmission saved = repository.save(proof);
+            return ResponseEntity.ok(saved);
+
         } catch (Exception e) {
-            e.printStackTrace(); // Log it to console
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Server Error: " + e.getMessage());
         }
     }
 
-
-    // Get all Submissions
     @GetMapping("/all")
     public List<ProofSubmission> getAllSubmissions() {
         return repository.findAll();
     }
 
-    // Get Submission by ID
     @GetMapping("/{id}")
     public ResponseEntity<ProofSubmission> getSubmissionById(@PathVariable String id) {
         Optional<ProofSubmission> proof = repository.findById(id);
