@@ -3,6 +3,7 @@ package com.example.projectgreenie.service;
 import com.example.projectgreenie.model.Challenge;
 import com.example.projectgreenie.repository.ChallengeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,32 +15,33 @@ public class ChallengeService {
     @Autowired
     private ChallengeRepository challengeRepository;
 
-    // Auto-generate Challenge ID
+    // ✅ Improved Challenge ID generator
     private int generateChallengeId() {
-        List<Challenge> challenges = challengeRepository.findAll();
-        return challenges.isEmpty() ? 1 : challenges.size() + 1;
+        return challengeRepository.findTopByOrderByChallengeIdDesc()
+                .map(c -> c.getChallengeId() + 1)
+                .orElse(1);
     }
 
     public Challenge addChallenge(Challenge challenge) {
-        challenge.setChallengeId(generateChallengeId());
-        Challenge savedChallenge = challengeRepository.save(challenge);
-        System.out.println("Challenge saved: " + savedChallenge);  // Debugging log
-        return savedChallenge;
+        try {
+            challenge.setChallengeId(generateChallengeId());
+            Challenge savedChallenge = challengeRepository.save(challenge);
+            System.out.println("Challenge saved: " + savedChallenge);
+            return savedChallenge;
+        } catch (DuplicateKeyException e) {
+            throw new RuntimeException("Duplicate challengeId. Please try again.");
+        }
     }
 
-
-    // Get all challenges
     public List<Challenge> getAllChallenges() {
         return challengeRepository.findAll();
     }
 
-    // Get challenge by ID
     public Challenge getChallengeById(int challengeId) {
         return challengeRepository.findByChallengeId(challengeId)
                 .orElseThrow(() -> new RuntimeException("Challenge not found"));
     }
 
-    // Update challenge
     public Challenge updateChallenge(int challengeId, Challenge updatedChallenge) {
         Optional<Challenge> existingChallenge = challengeRepository.findByChallengeId(challengeId);
         if (existingChallenge.isPresent()) {
@@ -53,7 +55,6 @@ public class ChallengeService {
         return null;
     }
 
-    // Delete challenge
     public boolean deleteChallenge(int challengeId) {
         Optional<Challenge> challenge = challengeRepository.findByChallengeId(challengeId);
         if (challenge.isPresent()) {
