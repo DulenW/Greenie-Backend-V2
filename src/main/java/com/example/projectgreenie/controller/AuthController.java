@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "https://test.greenie.dizzpy.dev")
+@CrossOrigin(origins = "https://test.greenie.dizzpy.dev") // or "*" for local testing
 public class AuthController {
 
     private final UserService userService;
@@ -56,7 +56,6 @@ public class AuthController {
         if (authenticated) {
             String token = jwtUtil.generateToken(email);
             
-            // Get user data
             Optional<User> userOpt = userService.getUserByEmail(email);
             if (userOpt.isPresent()) {
                 Map<String, String> response = new HashMap<>();
@@ -69,7 +68,7 @@ public class AuthController {
     }
 
     /**
-     * Request Password Reset (Send Reset Email)
+     * Request Password Reset (Send Reset Email / Print Token)
      */
     @PostMapping("/reset-password")
     public ResponseEntity<String> requestPasswordReset(@RequestBody PasswordResetRequestDTO requestDTO) {
