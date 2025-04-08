@@ -6,10 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
 public interface ChallengeRepository extends MongoRepository<Challenge, String> {
     Optional<Challenge> findByChallengeId(int challengeId);
+
+    // ✅ New method to find the highest challengeId
+    Optional<Challenge> findTopByOrderByChallengeIdDesc();
 }
-
-
 
