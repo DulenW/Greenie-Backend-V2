@@ -16,11 +16,11 @@ public class PostResponseDTO {
     private String fullName;
     private String username;
     private String profileImage;
-    private String content;
+    private String description;
     private String image;
     private int likes;
     private int commentCount;
     private List<String> commentIds; // Ensure this exists
-    //  private LocalDateTime timestamp;
+//  private LocalDateTime timestamp;
 
 }

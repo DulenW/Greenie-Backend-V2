@@ -15,17 +15,18 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class FeedPost {
+
     @Id
-    // meka mongo id ek
     private String id;
 
-    // custom post id eka
     private String postId;
     private String userId;
+    private String username; // ✅ Added username
     private String content;
     private String image;
     private LocalDateTime timestamp;
     private int likes;
+
     @Builder.Default
     private List<String> commentIds = new ArrayList<>();
 }

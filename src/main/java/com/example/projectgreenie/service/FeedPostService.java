@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,37 +25,27 @@ public class FeedPostService {
     }
 
     public List<PostResponseDTO> getAllPosts() {
+        List<FeedPost> posts = feedPostRepository.findAll();
         String userApiUrl = "http://localhost:8080/api/users/";
-
-        // Fetch and sort posts by timestamp DESC (newest first)
-        List<FeedPost> posts = feedPostRepository.findAll().stream()
-                .sorted(Comparator.comparing(FeedPost::getTimestamp).reversed())
-                .collect(Collectors.toList());
 
         return posts.stream().map(post -> {
             String fullName = "Unknown";
-            String username = "anonymous";
-            String profileImage = "https://via.placeholder.com/150";
+            String username = "Unknown";
+            String profileImage = "";
 
             try {
-                System.out.println("🔎 Fetching user for post: " + post.getPostId() + " → userId: " + post.getUserId());
-
                 ResponseEntity<UserDTO> response = restTemplate.getForEntity(
                         userApiUrl + post.getUserId(),
                         UserDTO.class
                 );
-
                 if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                     UserDTO user = response.getBody();
-                    fullName = user.getFullName() != null ? user.getFullName().trim() : fullName;
-                    username = user.getUsername() != null && !user.getUsername().trim().isEmpty()
-                            ? user.getUsername().trim()
-                            : user.getEmail(); // fallback to email
-
-                    profileImage = user.getProfileImage() != null ? user.getProfileImage() : profileImage;
+                    fullName = user.getFullName();
+                    username = user.getUsername();
+                    profileImage = user.getProfileImage();
                 }
             } catch (Exception e) {
-                System.err.println("❌ Failed to fetch user for userId: " + post.getUserId() + " → " + e.getMessage());
+                System.out.println("Error fetching user details for userId: " + post.getUserId());
             }
 
             return PostResponseDTO.builder()
@@ -65,11 +54,10 @@ public class FeedPostService {
                     .fullName(fullName)
                     .username(username)
                     .profileImage(profileImage)
-                    .content(post.getContent())
+                    .description(post.getContent())
                     .image(post.getImage())
                     .likes(post.getLikes())
                     .commentIds(post.getCommentIds())
-                    .commentCount(post.getCommentIds() != null ? post.getCommentIds().size() : 0)
                     .build();
         }).collect(Collectors.toList());
     }
