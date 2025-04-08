@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 
 @Service
@@ -25,6 +26,9 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService; // ✅ Step 2: Inject the EmailService
 
     /**
      * Retrieves the logged-in user's ID from the JWT token.
@@ -58,10 +62,10 @@ public class AuthService {
         User user = userOpt.get();
         String resetToken = jwtUtil.generateToken(user.getEmail()); // Generate JWT token
 
-        // TODO: Implement actual email sending with resetToken
-        System.out.println("Password reset link: http://localhost:3000/reset-password?token=" + resetToken);
+        // ✅ Send the actual email
+        emailService.sendResetLink(user.getEmail(), resetToken);
 
-        return "Password reset link sent!";
+        return "Password reset link sent to your email!";
     }
 
     /**
