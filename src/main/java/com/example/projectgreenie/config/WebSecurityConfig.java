@@ -42,6 +42,8 @@ public class WebSecurityConfig {
                                 "/api/posts/create",
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
+                                "/api/posts/user-details/{userId}",
+
                                 // Comments and Likes in Posts
                                 "/api/posts/{postId}/comments/create",
                                 "/api/posts/{postId}/comments/all",
@@ -49,6 +51,7 @@ public class WebSecurityConfig {
                                 "/api/posts/{postId}/comments/count",
                                 "/api/posts/{postId}/unlike",
                                 "/api/posts/{postId}/{commentId}/comments/delete",
+                                "/api/posts/user-details/{userId}",
 
                                 // Admin endpoints
                                 "/api/admin/register",
@@ -95,6 +98,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/posts/{postId}/comments/count").permitAll()
                         .requestMatchers("/api/posts/{postId}/unlike").permitAll()
                         .requestMatchers("/api/posts/{postId}/{commentId}/comments/delete").permitAll()
+                        .requestMatchers("/api/posts/user-details/{userId}").permitAll()
+
 
                         // Add admin specific security
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -114,7 +119,7 @@ public class WebSecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173", "http://localhost:5174"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));

@@ -2,6 +2,7 @@ package com.example.projectgreenie.controller;
 
 import com.example.projectgreenie.dto.CommentResponseDTO;
 import com.example.projectgreenie.dto.PostResponseDTO;
+import com.example.projectgreenie.dto.UserDTO;
 import com.example.projectgreenie.model.Comment;
 import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.FeedPostRepository;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -252,6 +254,26 @@ public class FeedPostController {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
+
+    @GetMapping("/user-details/{userId}")
+    public ResponseEntity<?> getUserDetailsByUserId(@PathVariable String userId) {
+        try {
+            // Call the user API internally
+            String userApiUrl = "http://localhost:8080/api/users/" + userId;
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<UserDTO> response = restTemplate.getForEntity(userApiUrl, UserDTO.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return ResponseEntity.ok(response.getBody());
+            } else {
+                return ResponseEntity.status(404).body("User not found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to fetch user details: " + e.getMessage());
+        }
+    }
+
 
 
 }
