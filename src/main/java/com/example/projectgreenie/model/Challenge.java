@@ -17,10 +17,12 @@ public class Challenge {
     private int points;
     private String description;
     private String photoUrl;
-
+    private String status; // NEW FIELD
 
     // Constructors
-    public Challenge() {}
+    public Challenge() {
+        this.status = "pending"; // default status
+    }
 
     public Challenge(int challengeId, String challengeName, int points, String description, String photoUrl) {
         this.challengeId = challengeId;
@@ -28,6 +30,7 @@ public class Challenge {
         this.points = points;
         this.description = description;
         this.photoUrl = photoUrl;
+        this.status = "pending"; // default when created
     }
 
     // Getters and Setters
@@ -78,5 +81,12 @@ public class Challenge {
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }
-}
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+}
