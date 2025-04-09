@@ -1,9 +1,13 @@
 package com.example.projectgreenie.controller;
 
+import com.example.projectgreenie.model.Challenge;
 import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.model.ProofSubmission;
+import com.example.projectgreenie.model.User;
+import com.example.projectgreenie.repository.ChallengeRepository;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import com.example.projectgreenie.repository.ProofSubmissionRepository;
+import com.example.projectgreenie.repository.UserRepository;
 import com.example.projectgreenie.service.OpenRouterService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +28,25 @@ public class ProofSubmissionController {
 
     private final ProofSubmissionRepository repository;
     private final OpenRouterService aiService;
+    private final UserRepository userRepository;
+    private final ChallengeRepository challengeRepository;
+
+
+
 
     @Autowired
     private FeedPostRepository feedPostRepository;
 
-    public ProofSubmissionController(ProofSubmissionRepository repository, OpenRouterService aiService) {
+    public ProofSubmissionController(
+            ProofSubmissionRepository repository,
+            OpenRouterService aiService,
+            UserRepository userRepository,
+            ChallengeRepository challengeRepository
+    ) {
         this.repository = repository;
         this.aiService = aiService;
+        this.userRepository = userRepository;
+        this.challengeRepository = challengeRepository;
     }
 
     @PostMapping("/submit")
@@ -76,12 +92,60 @@ public class ProofSubmissionController {
                 feedPostRepository.save(newPost);
             }
 
+            // ➕ Add points if Verified
+            if ("Verified".equalsIgnoreCase(status)) {
+                Optional<User> userOpt = userRepository.findById(proof.getUserId());
+                Optional<Challenge> challengeOpt = challengeRepository.findByChallengeId(
+                        Integer.parseInt(proof.getChallengeID())
+                );
+
+                if (userOpt.isPresent() && challengeOpt.isPresent()) {
+                    User user = userOpt.get();
+                    Challenge challenge = challengeOpt.get();
+
+                    user.setPointsCount(user.getPointsCount() + challenge.getPoints());
+                    userRepository.save(user);
+                }
+            }
+
             return ResponseEntity.ok(saved);
 
         } catch (Exception e) {
             log.error("Error in proof submission: ", e);
             return ResponseEntity.status(500).body("Server Error: " + e.getMessage());
         }
+    }
+
+
+    // ❌ Delete Proof (with point deduction)
+    @DeleteMapping("/{proofID}")
+    public ResponseEntity<?> deleteProof(@PathVariable String proofID) {
+        Optional<ProofSubmission> proofOpt = repository.findById(proofID);
+        if (proofOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Proof not found");
+        }
+
+        ProofSubmission proof = proofOpt.get();
+
+        // ➖ Remove points if it was Verified
+        if ("Verified".equalsIgnoreCase(proof.getStatus())) {
+            Optional<User> userOpt = userRepository.findById(proof.getUserId());
+            Optional<Challenge> challengeOpt = challengeRepository.findByChallengeId(
+                    Integer.parseInt(proof.getChallengeID())
+            );
+
+            if (userOpt.isPresent() && challengeOpt.isPresent()) {
+                User user = userOpt.get();
+                Challenge challenge = challengeOpt.get();
+
+                int updatedPoints = user.getPointsCount() - challenge.getPoints();
+                user.setPointsCount(Math.max(updatedPoints, 0)); // Prevent negative values
+                userRepository.save(user);
+            }
+        }
+
+        repository.deleteById(proofID);
+        return ResponseEntity.ok("Proof deleted and points adjusted if necessary.");
     }
 
     @GetMapping("/all")
