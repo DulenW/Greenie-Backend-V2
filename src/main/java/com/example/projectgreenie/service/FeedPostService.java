@@ -27,43 +27,46 @@ public class FeedPostService {
     public List<PostResponseDTO> getAllPosts() {
         List<FeedPost> posts = feedPostRepository.findAll()
                 .stream()
-                .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp())) // ✅ Sort by timestamp DESC
+                .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()))
                 .collect(Collectors.toList());
 
-        String userApiUrl = "http://localhost:8080/api/users/";
-
-        return posts.stream().map(post -> {
-            String fullName = "Unknown";
-            String username = "Unknown";
-            String profileImage = "";
-
-            try {
-                ResponseEntity<UserDTO> response = restTemplate.getForEntity(
-                        userApiUrl + post.getUserId(),
-                        UserDTO.class
-                );
-                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                    UserDTO user = response.getBody();
-                    fullName = user.getFullName();
-                    username = user.getUsername();
-                    profileImage = user.getProfileImage();
-                }
-            } catch (Exception e) {
-                System.out.println("Error fetching user details for userId: " + post.getUserId());
-            }
-
-            return PostResponseDTO.builder()
-                    .postId(post.getPostId())
-                    .userId(post.getUserId())
-                    .fullName(fullName)
-                    .username(username)
-                    .profileImage(profileImage)
-                    .description(post.getContent())
-                    .image(post.getImage())
-                    .likes(post.getLikes())
-                    .commentIds(post.getCommentIds())
-                    .build();
-        }).collect(Collectors.toList());
+        return posts.stream()
+                .map(this::convertToPostResponseDTO)
+                .collect(Collectors.toList());
     }
 
+    public PostResponseDTO convertToPostResponseDTO(FeedPost post) {
+        String userApiUrl = "http://localhost:8080/api/users/";
+
+        String fullName = "Unknown";
+        String username = "Unknown";
+        String profileImage = "";
+
+        try {
+            ResponseEntity<UserDTO> response = restTemplate.getForEntity(
+                    userApiUrl + post.getUserId(),
+                    UserDTO.class
+            );
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                UserDTO user = response.getBody();
+                fullName = user.getFullName();
+                username = user.getUsername();
+                profileImage = user.getProfileImage();
+            }
+        } catch (Exception e) {
+            System.out.println("Error fetching user details for userId: " + post.getUserId());
+        }
+
+        return PostResponseDTO.builder()
+                .postId(post.getPostId())
+                .userId(post.getUserId())
+                .fullName(fullName)
+                .username(username)
+                .profileImage(profileImage)
+                .description(post.getContent())
+                .image(post.getImage())
+                .likes(post.getLikes())
+                .commentIds(post.getCommentIds())
+                .build();
+    }
 }
