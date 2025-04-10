@@ -25,7 +25,11 @@ public class FeedPostService {
     }
 
     public List<PostResponseDTO> getAllPosts() {
-        List<FeedPost> posts = feedPostRepository.findAll();
+        List<FeedPost> posts = feedPostRepository.findAll()
+                .stream()
+                .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp())) // ✅ Sort by timestamp DESC
+                .collect(Collectors.toList());
+
         String userApiUrl = "http://localhost:8080/api/users/";
 
         return posts.stream().map(post -> {
@@ -61,4 +65,5 @@ public class FeedPostService {
                     .build();
         }).collect(Collectors.toList());
     }
+
 }

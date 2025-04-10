@@ -1,11 +1,10 @@
 package com.example.projectgreenie.service;
 
 import com.example.projectgreenie.dto.CommentResponseDTO;
-
+import com.example.projectgreenie.dto.CommentUserDTO;
 import com.example.projectgreenie.model.Comment;
 import com.example.projectgreenie.model.User;
 import com.example.projectgreenie.repository.CommentRepository;
-import com.example.projectgreenie.repository.FeedPostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -24,60 +23,47 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final UserService userService;
-    private final MongoTemplate mongoTemplate; // Inject MongoTemplate
+    private final MongoTemplate mongoTemplate;
 
     @Autowired
     public CommentService(CommentRepository commentRepository, UserService userService, MongoTemplate mongoTemplate) {
         this.commentRepository = commentRepository;
         this.userService = userService;
-        this.mongoTemplate = mongoTemplate; // Assign MongoTemplate
+        this.mongoTemplate = mongoTemplate;
     }
 
     public CommentResponseDTO createComment(String postId, String userId, String commentText) {
-        // Fetch user details
         Optional<User> userOpt = userService.getUserById(userId);
         if (userOpt.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
+
         User user = userOpt.get();
 
-        // Create and save the comment
         Comment comment = Comment.builder()
                 .postId(postId)
                 .userId(userId)
                 .comment(commentText)
-                .commentId("CMT-" + UUID.randomUUID().toString().substring(0, 8)) // Ensure commentId is set
-                .timestamp(LocalDateTime.now()) // Ensure timestamp is set
+                .commentId("CMT-" + UUID.randomUUID().toString().substring(0, 8))
+                .timestamp(LocalDateTime.now())
                 .build();
 
         Comment savedComment = commentRepository.save(comment);
 
-        // Debugging: Check if values are set
-        System.out.println("Saved Comment ID: " + savedComment.getCommentId());
-        System.out.println("Saved Comment Post ID: " + savedComment.getPostId());
-        System.out.println("Saved Comment Text: " + savedComment.getComment());
-        System.out.println("Saved Comment User ID: " + savedComment.getUserId());
-        System.out.println("Saved Comment Timestamp: " + savedComment.getTimestamp());
-
-        // Update post with new commentId
         addCommentToPost(postId, savedComment.getCommentId());
 
-        // Return response correctly
         return CommentResponseDTO.builder()
                 .commentId(savedComment.getCommentId())
                 .postId(savedComment.getPostId())
                 .comment(savedComment.getComment())
                 .userId(savedComment.getUserId())
-                .user(user)
+                .user(CommentUserDTO.builder()
+                        .fullName(user.getFullName())
+                        .username(user.getUsername())
+                        .profileImage(user.getProfileImgUrl())
+                        .build())
                 .timestamp(savedComment.getTimestamp())
                 .build();
-    }
-
-
-    private void addCommentToPost(String postId, String commentId) {
-        Query query = new Query(Criteria.where("postId").is(postId)); // Find post by custom postId
-        Update update = new Update().push("commentIds", commentId); // Push comment ID to commentIds array
-        mongoTemplate.updateFirst(query, update, "feedPost"); // Update feedPost collection
     }
 
     public List<CommentResponseDTO> getCommentsByPostId(String postId) {
@@ -85,20 +71,24 @@ public class CommentService {
         List<Comment> comments = mongoTemplate.find(query, Comment.class);
 
         return comments.stream().map(comment -> {
-            CommentResponseDTO response = new CommentResponseDTO();
-            response.setCommentId(comment.getCommentId()); // Use custom commentId
-            response.setPostId(comment.getPostId());
-            response.setComment(comment.getComment());
-            response.setUserId(comment.getUserId());
-//            response.setTimestamp(comment.getTimestamp());
+            Optional<User> userOpt = userService.getUserById(comment.getUserId());
 
-            // Fetch user details
-            userService.getUserById(comment.getUserId()).ifPresent(response::setUser);
+            CommentUserDTO userDto = userOpt.map(user -> CommentUserDTO.builder()
+                    .fullName(user.getFullName())
+                    .username(user.getUsername())
+                    .profileImage(user.getProfileImgUrl())
+                    .build()).orElse(null);
 
-            return response;
+            return CommentResponseDTO.builder()
+                    .commentId(comment.getCommentId())
+                    .postId(comment.getPostId())
+                    .comment(comment.getComment())
+                    .userId(comment.getUserId())
+                    .user(userDto)
+                    .timestamp(comment.getTimestamp())
+                    .build();
         }).collect(Collectors.toList());
     }
-
 
     public void deleteComment(String postId, String commentId) {
         Optional<Comment> commentOpt = commentRepository.findByCommentId(commentId);
@@ -108,19 +98,20 @@ public class CommentService {
 
         Comment comment = commentOpt.get();
 
-        // Ensure the comment belongs to the correct post
         if (!comment.getPostId().equals(postId)) {
             throw new RuntimeException("This comment does not belong to the specified post");
         }
 
-        // Delete the comment
         commentRepository.deleteByCommentId(commentId);
 
-        // Optionally: Remove commentId from the feedPost's commentIds array
-        Query query = new Query(Criteria.where("postId").is(postId)); // Find the post by postId
-        Update update = new Update().pull("commentIds", commentId); // Remove commentId from the array
-        mongoTemplate.updateFirst(query, update, "feedPost"); // Update feedPost collection
+        Query query = new Query(Criteria.where("postId").is(postId));
+        Update update = new Update().pull("commentIds", commentId);
+        mongoTemplate.updateFirst(query, update, "feedPost");
     }
 
-
+    private void addCommentToPost(String postId, String commentId) {
+        Query query = new Query(Criteria.where("postId").is(postId));
+        Update update = new Update().push("commentIds", commentId);
+        mongoTemplate.updateFirst(query, update, "feedPost");
+    }
 }

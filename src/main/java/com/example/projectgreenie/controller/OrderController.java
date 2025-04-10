@@ -36,7 +36,7 @@ public class OrderController {
 
     @PostMapping("/apply-points")
     public ResponseEntity<?> applyPoints(@RequestBody PointsApplyRequest request) {
-        log.info("Processing points redemption request: userId={}, cartTotal={}, pointsToRedeem={}", 
+        log.info("Processing points redemption request: userId={}, cartTotal={}, pointsToRedeem={}",
                 request.getUserId(), request.getCartTotal(), request.getPointsToRedeem());
 
         // Basic validation
@@ -85,7 +85,7 @@ public class OrderController {
                                 .pointsRemaining(remainingPoints)
                                 .build();
 
-                        log.info("Points redemption successful: originalTotal={}, pointsUsed={}, newTotal={}, remainingPoints={}", 
+                        log.info("Points redemption successful: originalTotal={}, pointsUsed={}, newTotal={}, remainingPoints={}",
                                 request.getCartTotal(), request.getPointsToRedeem(), newTotal, remainingPoints);
 
                         return ResponseEntity.ok(response);
@@ -129,17 +129,17 @@ public class OrderController {
         // Check product quantities and update stock
         for (OrderItemDTO item : request.getCartItems()) {
             Product product = productRepository.findByProductID(Integer.parseInt(item.getProductId()));
-                
+
             if (product == null) {
                 return ResponseEntity.badRequest()
-                    .body("Product not found: " + item.getProductId());
+                        .body("Product not found: " + item.getProductId());
             }
-            
+
             if (product.getQuantity() < item.getQuantity()) {
                 return ResponseEntity.badRequest()
-                    .body("Insufficient stock for product: " + product.getProductName());
+                        .body("Insufficient stock for product: " + product.getProductName());
             }
-            
+
             // Update product quantity
             product.setQuantity(product.getQuantity() - item.getQuantity());
             productRepository.save(product); // Save immediately after updating
@@ -171,7 +171,7 @@ public class OrderController {
                         .body("Error updating points balance");
             }
 
-            log.info("Order saved successfully: {}, Points deducted: {}, Remaining points: {}", 
+            log.info("Order saved successfully: {}, Points deducted: {}, Remaining points: {}",
                     savedOrder.getOrderId(), request.getPointsApplied(), remainingPoints);
 
             return ResponseEntity.ok(savedOrder);
@@ -202,9 +202,9 @@ public class OrderController {
     public ResponseEntity<List<Order>> getAllOrders() {
         try {
             List<Order> orders = orderRepository.findAll();
-            return orders.isEmpty() 
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(orders);
+            return orders.isEmpty()
+                    ? ResponseEntity.noContent().build()
+                    : ResponseEntity.ok(orders);
         } catch (Exception e) {
             log.error("Error fetching all orders", e);
             return ResponseEntity.internalServerError().build();
@@ -215,8 +215,8 @@ public class OrderController {
     public ResponseEntity<?> getOrderByOrderId(@PathVariable String orderId) {
         try {
             return orderRepository.findByOrderId(orderId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             log.error("Error fetching order with ID: " + orderId, e);
             return ResponseEntity.internalServerError().build();
