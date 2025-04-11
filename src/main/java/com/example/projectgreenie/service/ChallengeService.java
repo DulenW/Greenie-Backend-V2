@@ -15,7 +15,6 @@ public class ChallengeService {
     @Autowired
     private ChallengeRepository challengeRepository;
 
-    // ✅ Improved Challenge ID generator
     private int generateChallengeId() {
         return challengeRepository.findTopByOrderByChallengeIdDesc()
                 .map(c -> c.getChallengeId() + 1)
@@ -25,9 +24,10 @@ public class ChallengeService {
     public Challenge addChallenge(Challenge challenge) {
         try {
             challenge.setChallengeId(generateChallengeId());
-            Challenge savedChallenge = challengeRepository.save(challenge);
-            System.out.println("Challenge saved: " + savedChallenge);
-            return savedChallenge;
+            if (challenge.getStatus() == null || challenge.getStatus().isEmpty()) {
+                challenge.setStatus("pending");
+            }
+            return challengeRepository.save(challenge);
         } catch (DuplicateKeyException e) {
             throw new RuntimeException("Duplicate challengeId. Please try again.");
         }
@@ -62,5 +62,22 @@ public class ChallengeService {
             return true;
         }
         return false;
+    }
+
+    // ✅ New method to approve challenge (set status to active)
+    public Challenge approveChallenge(int challengeId) {
+        Optional<Challenge> optionalChallenge = challengeRepository.findByChallengeId(challengeId);
+        if (optionalChallenge.isPresent()) {
+            Challenge challenge = optionalChallenge.get();
+            challenge.setStatus("active");
+            return challengeRepository.save(challenge);
+        } else {
+            throw new RuntimeException("Challenge not found");
+        }
+    }
+
+    // ✅ Get challenges by status
+    public List<Challenge> getChallengesByStatus(String status) {
+        return challengeRepository.findByStatus(status);
     }
 }

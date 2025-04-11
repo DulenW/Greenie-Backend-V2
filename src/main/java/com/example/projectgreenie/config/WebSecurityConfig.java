@@ -84,11 +84,20 @@ public class WebSecurityConfig {
                                 "/api/order/{orderId}"
                         ).permitAll()
 
-                        // Challenges API
+                        // USER: Challenges API
                         .requestMatchers("/api/challenges/create").authenticated()
-                        .requestMatchers("/api/challenges/").permitAll()
-                        .requestMatchers("/api/challenges/create", "/api/challenges/all", "/api/challenges/{challengeId}" ).permitAll()
-                        .requestMatchers("/api/admin/challenges/create", "/api/admin/challenges/all", "/api/admin/challenges/{challengeId}" ).permitAll()
+                        .requestMatchers("/api/challenges/all").permitAll()
+                        .requestMatchers("/api/challenges/{challengeId}").permitAll()
+                        .requestMatchers("/api/challenges/status/{status}").permitAll()
+                        .requestMatchers("/api/challenges/**").permitAll() // Fallback for other GETs
+
+                        // ADMIN: Challenges API
+                        .requestMatchers("/api/admin/challenges/create").authenticated()
+                        .requestMatchers("/api/admin/challenges/all").permitAll()
+                        .requestMatchers("/api/admin/challenges/{challengeId}").permitAll()
+                        .requestMatchers("/api/admin/challenges/approve/{challengeId}").permitAll()
+                        .requestMatchers("/api/admin/challenges/status/{status}").permitAll()
+                        .requestMatchers("/api/admin/challenges/**").permitAll()// fallback for any other admin endpoints
 
 
                         // Proof API
