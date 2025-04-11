@@ -39,10 +39,16 @@ public class WebSecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/reset-password",
                                 "/api/auth/set-new-password",
+
                                 "/api/posts/create",
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
                                 "/api/posts/user-details/{userId}",
+
+                                "/api/test/broadcast",
+                                "/ws-feed/**",        // ✅ allow SockJS/WebSocket handshake endpoint
+                                "/topic/**",          // ✅ allow message broker topics
+
 
                                 // Comments and Likes in Posts
                                 "/api/posts/{postId}/comments/create",
@@ -101,6 +107,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/posts/{postId}/unlike").permitAll()
                         .requestMatchers("/api/posts/{postId}/{commentId}/comments/delete").permitAll()
                         .requestMatchers("/api/posts/user-details/{userId}").permitAll()
+                        .requestMatchers("/api/test/broadcast").permitAll()
 
 
                         // Add admin specific security
