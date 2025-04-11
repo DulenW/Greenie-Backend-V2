@@ -15,6 +15,7 @@ public class ChallengeService {
     @Autowired
     private ChallengeRepository challengeRepository;
 
+    // Generate next challengeId
     private int generateChallengeId() {
         return challengeRepository.findTopByOrderByChallengeIdDesc()
                 .map(c -> c.getChallengeId() + 1)
@@ -64,7 +65,6 @@ public class ChallengeService {
         return false;
     }
 
-    // ✅ New method to approve challenge (set status to active)
     public Challenge approveChallenge(int challengeId) {
         Optional<Challenge> optionalChallenge = challengeRepository.findByChallengeId(challengeId);
         if (optionalChallenge.isPresent()) {
@@ -76,7 +76,6 @@ public class ChallengeService {
         }
     }
 
-    // ✅ Get challenges by status
     public List<Challenge> getChallengesByStatus(String status) {
         return challengeRepository.findByStatus(status);
     }

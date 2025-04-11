@@ -41,20 +41,21 @@ public class AdminChallengeController {
         return ResponseEntity.ok(challenge);
     }
 
-    @DeleteMapping("/{challengeId}")
+    // ✅ Updated route
+    @DeleteMapping("/delete/{challengeId}")
     public ResponseEntity<Void> deleteChallenge(@PathVariable String challengeId) {
         boolean deleted = challengeService.deleteChallenge(Integer.parseInt(challengeId));
         return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
 
-    // ✅ Approve a pending challenge (change status to active)
+    // ✅ Approve a pending challenge
     @PutMapping("/approve/{challengeId}")
     public ResponseEntity<Challenge> approveChallenge(@PathVariable String challengeId) {
         Challenge approvedChallenge = challengeService.approveChallenge(Integer.parseInt(challengeId));
         return ResponseEntity.ok(approvedChallenge);
     }
 
-    // ✅ Optional: Filter challenges by status (pending, active)
+    // ✅ Filter challenges by status
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Challenge>> getChallengesByStatus(@PathVariable String status) {
         List<Challenge> challenges = challengeService.getChallengesByStatus(status);

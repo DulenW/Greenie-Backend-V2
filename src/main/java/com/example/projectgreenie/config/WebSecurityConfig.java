@@ -97,8 +97,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/admin/challenges/{challengeId}").permitAll()
                         .requestMatchers("/api/admin/challenges/approve/{challengeId}").permitAll()
                         .requestMatchers("/api/admin/challenges/status/{status}").permitAll()
-                        .requestMatchers("/api/admin/challenges/**").permitAll()// fallback for any other admin endpoints
-
+                        .requestMatchers("/api/admin/challenges/delete/{challengeId}").permitAll()
+                        .requestMatchers("/api/admin/challenges/**").permitAll() // fallback
 
                         // Proof API
                         .requestMatchers("/api/proof/").authenticated()
