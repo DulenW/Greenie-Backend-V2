@@ -52,8 +52,8 @@ public class WebSecurityConfig {
                                 "/api/saved-posts//{userId}",
 
                                 "/api/test/broadcast",
-                                "/ws-feed/**",        // ✅ allow SockJS/WebSocket handshake endpoint
-                                "/topic/**",          // ✅ allow message broker topics
+                                "/ws-feed/**",        // allow SockJS/WebSocket handshake endpoint
+                                "/topic/**",          // allow message broker topics
 
 
                                 // Comments and Likes in Posts
