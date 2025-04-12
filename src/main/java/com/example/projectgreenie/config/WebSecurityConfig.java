@@ -45,6 +45,7 @@ public class WebSecurityConfig {
                                 "/api/posts/{postId}/like",
                                 "/api/posts/user-details/{userId}",
 
+
                                 "/api/test/broadcast",
                                 "/ws-feed/**",        // ✅ allow SockJS/WebSocket handshake endpoint
                                 "/topic/**",          // ✅ allow message broker topics
@@ -58,6 +59,9 @@ public class WebSecurityConfig {
                                 "/api/posts/{postId}/unlike",
                                 "/api/posts/{postId}/{commentId}/comments/delete",
                                 "/api/posts/user-details/{userId}",
+                                "/api/posts/{postId}/react",
+                                "/api/posts/{postId}/reactions",
+                                "/api/posts/{postId}/likes/count",
 
                                 // Admin endpoints
                                 "/api/admin/register",

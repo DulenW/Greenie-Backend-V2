@@ -6,7 +6,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Setter
 @Getter
@@ -21,12 +23,15 @@ public class FeedPost {
 
     private String postId;
     private String userId;
-    private String username; // ✅ Added username
+    private String username;
     private String content;
     private String image;
     private LocalDateTime timestamp;
-    private int likes;
 
     @Builder.Default
     private List<String> commentIds = new ArrayList<>();
+
+    private Map<String, List<String>> reactions = new HashMap<>();
 }
+
+

@@ -85,7 +85,7 @@ public class ProofSubmissionController {
                         .content(proof.getDescription())
                         .image(proof.getImageUrl())
                         .timestamp(LocalDateTime.now())
-                        .likes(0)
+                        .reactions(new HashMap<>()) // initialize empty reactions
                         .commentIds(new ArrayList<>())
                         .build();
 

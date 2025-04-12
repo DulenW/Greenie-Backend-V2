@@ -1,9 +1,6 @@
 package com.example.projectgreenie.controller;
 
-import com.example.projectgreenie.dto.CommentResponseDTO;
-import com.example.projectgreenie.dto.PostResponseDTO;
-import com.example.projectgreenie.dto.UserDTO;
-import com.example.projectgreenie.dto.FeedUpdateMessage;
+import com.example.projectgreenie.dto.*;
 import com.example.projectgreenie.model.FeedPost;
 import com.example.projectgreenie.repository.FeedPostRepository;
 import com.example.projectgreenie.service.AuthService;
@@ -22,10 +19,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
 import java.time.LocalDateTime;
-
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,8 +94,8 @@ public class FeedPostController {
                     .content(content)
                     .image(base64Image)
                     .timestamp(LocalDateTime.now())
-                    .likes(0)
                     .commentIds(new ArrayList<>())
+                    .reactions(new HashMap<>())
                     .build();
 
             FeedPost savedPost = feedPostRepository.save(post);
@@ -139,52 +135,6 @@ public class FeedPostController {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageIO.write(compressedImage, "jpg", outputStream);
         return Base64.getEncoder().encodeToString(outputStream.toByteArray());
-    }
-
-    @PutMapping("/{postId}/like")
-    public ResponseEntity<?> likePost(@PathVariable("postId") String postId) {
-        Optional<FeedPost> postOpt = feedPostRepository.findByPostId(postId);
-
-        if (postOpt.isEmpty()) {
-            return ResponseEntity.status(404).body("Post not found");
-        }
-
-        FeedPost post = postOpt.get();
-        post.setLikes(post.getLikes() + 1);
-        feedPostRepository.save(post);
-
-        return ResponseEntity.ok("Post liked successfully");
-    }
-
-    @PutMapping("/{postId}/unlike")
-    public ResponseEntity<?> unlikePost(@PathVariable("postId") String postId) {
-        Optional<FeedPost> postOpt = feedPostRepository.findByPostId(postId);
-
-        if (postOpt.isEmpty()) {
-            return ResponseEntity.status(404).body("Post not found");
-        }
-
-        FeedPost post = postOpt.get();
-
-        if (post.getLikes() > 0) {
-            post.setLikes(post.getLikes() - 1);
-            feedPostRepository.save(post);
-            return ResponseEntity.ok("Post unliked successfully");
-        }
-
-        return ResponseEntity.ok("Post already has 0 likes");
-    }
-
-    @GetMapping("/{postId}/likes/all")
-    public ResponseEntity<?> getLikeCount(@PathVariable("postId") String postId) {
-        Optional<FeedPost> postOpt = feedPostRepository.findByPostId(postId);
-
-        if (postOpt.isEmpty()) {
-            return ResponseEntity.status(404).body("Post not found");
-        }
-
-        int likeCount = postOpt.get().getLikes();
-        return ResponseEntity.ok(likeCount);
     }
 
     @GetMapping("/all")
@@ -256,4 +206,48 @@ public class FeedPostController {
             return ResponseEntity.status(500).body("Failed to fetch user details: " + e.getMessage());
         }
     }
+
+    @PutMapping("/{postId}/react")
+    public ResponseEntity<?> reactToPost(@PathVariable String postId, @RequestBody ReactToPostRequest request) {
+        Optional<FeedPost> postOpt = feedPostRepository.findByPostId(postId);
+
+        if (postOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Post not found");
+        }
+
+        FeedPost post = postOpt.get();
+        Map<String, List<String>> reactions = post.getReactions();
+
+        for (List<String> userList : reactions.values()) {
+            userList.remove(request.getUserId());
+        }
+
+        reactions.computeIfAbsent(request.getEmoji(), k -> new ArrayList<>()).add(request.getUserId());
+        post.setReactions(reactions);
+        feedPostRepository.save(post);
+
+        return ResponseEntity.ok("Reaction updated");
+    }
+
+    @GetMapping("/{postId}/likes/count")
+    public ResponseEntity<Integer> getLikeCountFromReactions(@PathVariable String postId) {
+        return feedPostRepository.findByPostId(postId)
+                .map(post -> {
+                    Map<String, List<String>> reactions = post.getReactions();
+                    int count = reactions != null
+                            ? reactions.values().stream().mapToInt(List::size).sum()
+                            : 0;
+                    return ResponseEntity.ok(count);
+                })
+                .orElse(ResponseEntity.status(404).body(0));
+    }
+
+    @GetMapping("/{postId}/reactions")
+    public ResponseEntity<Map<String, List<String>>> getReactions(@PathVariable String postId) {
+        return feedPostRepository.findByPostId(postId)
+                .map(post -> ResponseEntity.ok(post.getReactions()))
+                .orElse(ResponseEntity.status(404).body(new HashMap<>()));
+    }
+
+
 }

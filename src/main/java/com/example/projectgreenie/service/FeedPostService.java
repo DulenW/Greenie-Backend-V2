@@ -65,8 +65,14 @@ public class FeedPostService {
                 .profileImage(profileImage)
                 .description(post.getContent())
                 .image(post.getImage())
-                .likes(post.getLikes())
+                .likes(
+                        post.getReactions() != null
+                                ? post.getReactions().values().stream().mapToInt(List::size).sum()
+                                : 0
+                )
                 .commentIds(post.getCommentIds())
+                .reactions(post.getReactions()) // ✅ send reactions to frontend
                 .build();
+
     }
 }

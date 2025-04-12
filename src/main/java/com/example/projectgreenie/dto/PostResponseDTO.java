@@ -3,6 +3,7 @@ package com.example.projectgreenie.dto;
 
 import lombok.*;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -10,7 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class PostResponseDTO {
-
     private String postId;
     private String userId;
     private String fullName;
@@ -20,7 +20,6 @@ public class PostResponseDTO {
     private String image;
     private int likes;
     private int commentCount;
-    private List<String> commentIds; // Ensure this exists
-//  private LocalDateTime timestamp;
-
+    private List<String> commentIds;
+    private Map<String, List<String>> reactions; // ✅ NEW
 }
