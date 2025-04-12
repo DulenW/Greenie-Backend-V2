@@ -40,11 +40,16 @@ public class WebSecurityConfig {
                                 "/api/auth/reset-password",
                                 "/api/auth/set-new-password",
 
+                                // Feed post APIs
                                 "/api/posts/create",
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
                                 "/api/posts/user-details/{userId}",
 
+                                // Save post APIs
+                                "/api/saved-posts/save",
+                                "/api/saved-posts/unsave",
+                                "/api/saved-posts//{userId}",
 
                                 "/api/test/broadcast",
                                 "/ws-feed/**",        // ✅ allow SockJS/WebSocket handshake endpoint

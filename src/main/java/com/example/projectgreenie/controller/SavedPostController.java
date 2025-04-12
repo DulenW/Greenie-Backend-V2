@@ -1,5 +1,6 @@
 package com.example.projectgreenie.controller;
 
+import com.example.projectgreenie.dto.SavedPostRequest;
 import com.example.projectgreenie.service.SavedPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

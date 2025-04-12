@@ -24,4 +24,6 @@ public class SavedPost {
 
     private LocalDateTime savedAt;
 
+    public SavedPost(String string, String postId, String userId) {
+    }
 }
