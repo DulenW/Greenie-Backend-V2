@@ -8,6 +8,7 @@ import com.example.projectgreenie.service.CommentService;
 import com.example.projectgreenie.service.FeedPostService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -249,5 +250,14 @@ public class FeedPostController {
                 .orElse(ResponseEntity.status(404).body(new HashMap<>()));
     }
 
+    @DeleteMapping("/delete/{postId}")
+    public ResponseEntity<?> deletePost(@PathVariable String postId) {
+        try {
+            feedPostRepository.deleteByPostId(postId);
+            return ResponseEntity.ok("Post deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete post");
+        }
+    }
 
 }

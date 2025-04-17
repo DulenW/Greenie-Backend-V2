@@ -16,4 +16,5 @@ public interface FeedPostRepository extends MongoRepository<FeedPost, String> {
     @Query("{ 'postId': { $regex: ?0 } }")
     List<FeedPost> findByPostIdStartingWith(String prefix);
 
+    void deleteByPostId(String postId);
 }
