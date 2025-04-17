@@ -15,9 +15,14 @@ public class SavedPostService {
     @Autowired
     private SavedPostRepository savedPostRepository;
 
+    // ✅ Save a post with custom savePostId
     public void savePost(String postId, String userId) {
         if (!savedPostRepository.existsByPostIdAndUserId(postId, userId)) {
-            SavedPost saved = new SavedPost(UUID.randomUUID().toString(), postId, userId);
+            SavedPost saved = SavedPost.builder()
+                    .savePostId(UUID.randomUUID().toString())  // ✅ Assign custom ID
+                    .postId(postId)
+                    .userId(userId)
+                    .build();
             savedPostRepository.save(saved);
         }
     }

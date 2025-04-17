@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class SavedPost {
 
     @Id
-    private String id;
+    private String savePostId;
 
     private String userId;   // Who saved it
     private String postId;   // Which post was saved
