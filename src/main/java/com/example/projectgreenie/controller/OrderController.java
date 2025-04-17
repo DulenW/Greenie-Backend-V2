@@ -10,6 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 import com.example.projectgreenie.model.Order;
 import com.example.projectgreenie.repository.OrderRepository;
+import com.example.projectgreenie.repository.ProductRepository;
+import com.example.projectgreenie.model.Product;
+import com.example.projectgreenie.dto.OrderItemDTO;
+import com.example.projectgreenie.dto.OrderRequestDTO;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.List;
@@ -22,15 +26,17 @@ public class OrderController {
 
     private final UserService userService;
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
-    public OrderController(UserService userService, OrderRepository orderRepository) {
+    public OrderController(UserService userService, OrderRepository orderRepository, ProductRepository productRepository) {
         this.userService = userService;
         this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
     }
 
     @PostMapping("/apply-points")
     public ResponseEntity<?> applyPoints(@RequestBody PointsApplyRequest request) {
-        log.info("Processing points redemption request: userId={}, cartTotal={}, pointsToRedeem={}", 
+        log.info("Processing points redemption request: userId={}, cartTotal={}, pointsToRedeem={}",
                 request.getUserId(), request.getCartTotal(), request.getPointsToRedeem());
 
         // Basic validation
@@ -79,7 +85,7 @@ public class OrderController {
                                 .pointsRemaining(remainingPoints)
                                 .build();
 
-                        log.info("Points redemption successful: originalTotal={}, pointsUsed={}, newTotal={}, remainingPoints={}", 
+                        log.info("Points redemption successful: originalTotal={}, pointsUsed={}, newTotal={}, remainingPoints={}",
                                 request.getCartTotal(), request.getPointsToRedeem(), newTotal, remainingPoints);
 
                         return ResponseEntity.ok(response);
@@ -94,7 +100,7 @@ public class OrderController {
     }
 
     @PostMapping("/place")
-    public ResponseEntity<?> placeOrder(@RequestBody com.example.projectgreenie.dto.OrderRequestDTO request) {
+    public ResponseEntity<?> placeOrder(@RequestBody OrderRequestDTO request) {
         log.info("Received order request: {}", request);
 
         // Validate order ID uniqueness
@@ -120,6 +126,25 @@ public class OrderController {
             return ResponseEntity.badRequest().body("Invalid total amount calculation");
         }
 
+        // Check product quantities and update stock
+        for (OrderItemDTO item : request.getCartItems()) {
+            Product product = productRepository.findByProductID(Integer.parseInt(item.getProductId()));
+
+            if (product == null) {
+                return ResponseEntity.badRequest()
+                        .body("Product not found: " + item.getProductId());
+            }
+
+            if (product.getQuantity() < item.getQuantity()) {
+                return ResponseEntity.badRequest()
+                        .body("Insufficient stock for product: " + product.getProductName());
+            }
+
+            // Update product quantity
+            product.setQuantity(product.getQuantity() - item.getQuantity());
+            productRepository.save(product); // Save immediately after updating
+        }
+
         try {
             // Create and save order
             Order order = new Order();
@@ -139,20 +164,37 @@ public class OrderController {
             int remainingPoints = currentPoints - request.getPointsApplied();
             if (!userService.updateUserPoints(request.getUserId(), remainingPoints)) {
                 log.error("Failed to update user points balance");
-                // Consider rolling back the order here if points update fails
+                // Roll back product quantities
+                rollbackProductQuantities(request.getCartItems());
                 orderRepository.delete(savedOrder);
                 return ResponseEntity.internalServerError()
                         .body("Error updating points balance");
             }
 
-            log.info("Order saved successfully: {}, Points deducted: {}, Remaining points: {}", 
+            log.info("Order saved successfully: {}, Points deducted: {}, Remaining points: {}",
                     savedOrder.getOrderId(), request.getPointsApplied(), remainingPoints);
 
             return ResponseEntity.ok(savedOrder);
         } catch (Exception e) {
             log.error("Error saving order", e);
+            // Roll back product quantities on error
+            rollbackProductQuantities(request.getCartItems());
             return ResponseEntity.internalServerError()
                     .body("Error processing order: " + e.getMessage());
+        }
+    }
+
+    private void rollbackProductQuantities(List<OrderItemDTO> items) {
+        try {
+            for (OrderItemDTO item : items) {
+                Product product = productRepository.findByProductID(Integer.parseInt(item.getProductId()));
+                if (product != null) {
+                    product.setQuantity(product.getQuantity() + item.getQuantity());
+                    productRepository.save(product);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error rolling back product quantities", e);
         }
     }
 
@@ -160,9 +202,9 @@ public class OrderController {
     public ResponseEntity<List<Order>> getAllOrders() {
         try {
             List<Order> orders = orderRepository.findAll();
-            return orders.isEmpty() 
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(orders);
+            return orders.isEmpty()
+                    ? ResponseEntity.noContent().build()
+                    : ResponseEntity.ok(orders);
         } catch (Exception e) {
             log.error("Error fetching all orders", e);
             return ResponseEntity.internalServerError().build();
@@ -173,8 +215,8 @@ public class OrderController {
     public ResponseEntity<?> getOrderByOrderId(@PathVariable String orderId) {
         try {
             return orderRepository.findByOrderId(orderId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             log.error("Error fetching order with ID: " + orderId, e);
             return ResponseEntity.internalServerError().build();

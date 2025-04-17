@@ -12,8 +12,9 @@ import java.util.Map;
 
 @Service
 public class OpenRouterService {
+
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "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"; // 🔁 Replace with your actual key
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -29,64 +30,80 @@ public class OpenRouterService {
             headers.set("Authorization", "Bearer " + API_KEY);
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Construct API Request
+            // 🧠 Strict Prompt
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", "google/gemini-2.0-flash-lite-001");
+            requestBody.put("model", "google/gemini-pro-vision");
 
             Map<String, Object> textPart = new HashMap<>();
             textPart.put("type", "text");
-            textPart.put("text", "Does this image show a real environmental cleanup effort?");
+            textPart.put("text", """
+                You are an expert AI tasked with verifying the authenticity of images submitted for environmental cleanup challenges. You must determine if the image is a **real, natural photograph** or a **fake, AI-generated, animated, digitally illustrated, or cartoon image**.
+
+                🛑 Do NOT approve:
+                - AI-generated or cartoon-style images
+                - Digitally illustrated characters or backgrounds
+                - Unrealistic lighting, textures, faces, or hands
+                - Anything that lacks real-world photographic characteristics
+                Even if the description matches, the image must still be rejected if it is not a natural photo.
+
+                ✅ Only approve:
+                - Authentic, natural, real-world photographs
+                - Clear, unedited, human-taken images
+
+                🔍 Now, analyze the image and the description provided. Determine:
+
+                Status: Verified or Issue  
+                Reason:Provide a strict explanation for your decision. Be clear whether the image is AI-generated, cartoon-like, or real.
+
+                Always err on the side of caution. Any sign of non-natural or digital creation must result in "Issue".
+
+                Description: %s
+                """.formatted(description));
 
             Map<String, Object> imagePart = new HashMap<>();
             imagePart.put("type", "image_url");
-
             Map<String, Object> imageUrlMap = new HashMap<>();
             imageUrlMap.put("url", imageUrl);
             imagePart.put("image_url", imageUrlMap);
 
-            Map<String, Object> userMessage = new HashMap<>();
-            userMessage.put("role", "user");
-            userMessage.put("content", new Object[]{textPart, imagePart});
+            Map<String, Object> message = new HashMap<>();
+            message.put("role", "user");
+            message.put("content", new Object[]{textPart, imagePart});
 
-            requestBody.put("messages", Collections.singletonList(userMessage));
+            requestBody.put("messages", Collections.singletonList(message));
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-            // Make API Call
             ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
 
-            // Log API response
             System.out.println("📡 OpenRouter API Response: " + response.getBody());
 
-            // Parse AI Response
-            return parseResponseAndReturnAIContent(response.getBody());
+            return extractStatusAndReason(response.getBody());
 
         } catch (Exception e) {
             e.printStackTrace();
-            return "Error"; // Handle failures
+            return "Issue | AI validation failed due to server error.";
         }
     }
 
-    private String parseResponseAndReturnAIContent(String responseBody) {
+    private String extractStatusAndReason(String json) {
         try {
-            JsonNode jsonResponse = objectMapper.readTree(responseBody);
-            System.out.println("🔍 FULL API RESPONSE: " + jsonResponse.toPrettyString());
+            JsonNode root = objectMapper.readTree(json);
+            String content = root.path("choices").get(0).path("message").path("content").asText();
 
-            JsonNode choices = jsonResponse.path("choices");
-            if (choices.isArray() && choices.size() > 0) {
-                // Extract the relevant message content
-                String aiResponseText = choices.get(0).path("message").path("content").asText();
+            System.out.println("🔍 FULL AI RESPONSE: " + content);
 
-                // Log and return only the relevant description from the AI response
-                System.out.println("🤖 AI Response: " + aiResponseText);
-                return aiResponseText.trim(); // Trim whitespace and return the relevant description
+            // Parse for format: "Status: ... Reason: ..."
+            if (content.toLowerCase().contains("status:") && content.toLowerCase().contains("reason:")) {
+                String status = content.split("(?i)status:")[1].split("(?i)reason:")[0].trim();
+                String reason = content.split("(?i)reason:")[1].trim();
+
+                return status + " | " + reason;
             }
 
-            return "Issue"; // If no valid response
+            return "Issue | AI response format invalid.";
         } catch (Exception e) {
             e.printStackTrace();
-            return "Error"; // Parsing error
+            return "Issue | Error parsing AI response.";
         }
     }
-
 }

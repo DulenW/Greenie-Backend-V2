@@ -1,10 +1,8 @@
 package com.example.projectgreenie.dto;
 
-import com.example.projectgreenie.model.User;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Data
 @Builder
@@ -15,6 +13,6 @@ public class CommentResponseDTO {
     private String postId;
     private String comment;
     private String userId;
-    private User user;  // Include user details (profile photo, name)
-    private LocalDateTime timestamp;  // Fix type mismatch
+    private CommentUserDTO user; // ✅ changed from User to lightweight CommentUserDTO
+    private LocalDateTime timestamp;
 }

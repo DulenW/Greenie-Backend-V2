@@ -39,9 +39,23 @@ public class WebSecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/reset-password",
                                 "/api/auth/set-new-password",
+
+                                // Feed post APIs
                                 "/api/posts/create",
                                 "/api/posts/all",
                                 "/api/posts/{postId}/like",
+                                "/api/posts/user-details/{userId}",
+
+                                // Save post APIs
+                                "/api/saved-posts/save",
+                                "/api/saved-posts/unsave",
+                                "/api/saved-posts//{userId}",
+
+                                "/api/test/broadcast",
+                                "/ws-feed/**",        // allow SockJS/WebSocket handshake endpoint
+                                "/topic/**",          // allow message broker topics
+
+
                                 // Comments and Likes in Posts
                                 "/api/posts/{postId}/comments/create",
                                 "/api/posts/{postId}/comments/all",
@@ -49,6 +63,10 @@ public class WebSecurityConfig {
                                 "/api/posts/{postId}/comments/count",
                                 "/api/posts/{postId}/unlike",
                                 "/api/posts/{postId}/{commentId}/comments/delete",
+                                "/api/posts/user-details/{userId}",
+                                "/api/posts/{postId}/react",
+                                "/api/posts/{postId}/reactions",
+                                "/api/posts/{postId}/likes/count",
 
                                 // Admin endpoints
                                 "/api/admin/register",
@@ -75,15 +93,26 @@ public class WebSecurityConfig {
                                 "/api/order/{orderId}"
                         ).permitAll()
 
-                        // Challenges API
-                        .requestMatchers("/api/challenges/").authenticated()
-                        .requestMatchers("/api/challenges/create", "/api/challenges/all", "/api/challenges/{challengeId}" ).permitAll()
-                        .requestMatchers("/api/admin/challenges/create", "/api/admin/challenges/all", "/api/admin/challenges/{challengeId}" ).permitAll()
+                        // USER: Challenges API
+                        .requestMatchers("/api/challenges/create").authenticated()
+                        .requestMatchers("/api/challenges/all").permitAll()
+                        .requestMatchers("/api/challenges/{challengeId}").permitAll()
+                        .requestMatchers("/api/challenges/status/{status}").permitAll()
+                        .requestMatchers("/api/challenges/**").permitAll() // Fallback for other GETs
+
+                        // ADMIN: Challenges API
+                        .requestMatchers("/api/admin/challenges/create").authenticated()
+                        .requestMatchers("/api/admin/challenges/all").permitAll()
+                        .requestMatchers("/api/admin/challenges/{challengeId}").permitAll()
+                        .requestMatchers("/api/admin/challenges/approve/{challengeId}").permitAll()
+                        .requestMatchers("/api/admin/challenges/status/{status}").permitAll()
+                        .requestMatchers("/api/admin/challenges/delete/{challengeId}").permitAll()
+                        .requestMatchers("/api/admin/challenges/**").permitAll() // fallback
 
                         // Proof API
                         .requestMatchers("/api/proof/").authenticated()
                         .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
-                        .requestMatchers("/api/proof/submit", "/api/proof/all", "/api/proof/{id}").permitAll()
+                        .requestMatchers("/api/proof/submit/{id}", "/api/proof/all", "/api/proof/{id}").permitAll()
 
                         // Feed Post
                         .requestMatchers("/api/posts").permitAll()
@@ -95,6 +124,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/posts/{postId}/comments/count").permitAll()
                         .requestMatchers("/api/posts/{postId}/unlike").permitAll()
                         .requestMatchers("/api/posts/{postId}/{commentId}/comments/delete").permitAll()
+                        .requestMatchers("/api/posts/user-details/{userId}").permitAll()
+                        .requestMatchers("/api/test/broadcast").permitAll()
+
 
                         // Add admin specific security
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -114,7 +146,7 @@ public class WebSecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173", "http://localhost:5174"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));
