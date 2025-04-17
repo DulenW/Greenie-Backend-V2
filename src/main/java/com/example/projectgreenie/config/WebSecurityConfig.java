@@ -52,6 +52,11 @@ public class WebSecurityConfig {
                                 "/api/saved-posts/unsave",
                                 "/api/saved-posts//{userId}",
 
+                                // Post Reporting
+                                "/api/reported-posts/report",
+                                "/api/reported-posts/all",
+                                "/api/reported-posts/delete/{id}",
+                            
                                 "/api/test/broadcast",
                                 "/ws-feed/**",        // allow SockJS/WebSocket handshake endpoint
                                 "/topic/**",          // allow message broker topics
