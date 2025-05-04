@@ -14,7 +14,7 @@ import java.util.Map;
 public class OpenRouterService {
 
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String API_KEY = "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"; // 🔁 Replace with your actual key
+    private static final String API_KEY = "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"; // 🔁 Replace with your actual key
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
