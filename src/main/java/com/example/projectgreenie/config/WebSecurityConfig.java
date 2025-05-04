@@ -79,7 +79,10 @@ public class WebSecurityConfig {
                                 "/api/admin/login",
                                 "/api/admin/all",
                                 "/api/admin/{adminId}",
-                                "/api/admin/delete/{adminId}"
+                                "/api/admin/delete/{adminId}",
+                                "/api/admin/dashboard/stats",
+                                "/api/admin/dashboard/recent-orders",
+                                "/api/admin/dashboard/recent-posts"
                         ).permitAll()
                         .requestMatchers("/api/posts/**").authenticated()
                         .requestMatchers(
