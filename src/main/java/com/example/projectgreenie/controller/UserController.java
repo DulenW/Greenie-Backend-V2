@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,15 +52,15 @@ public class UserController {
     public ResponseEntity<?> updateUserProfile(
             @RequestParam("userData") String userDataJson,
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
-            Authentication authentication) {
-
+            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage) {
         try {
-            // Update the user profile using the service
-            User updatedUser = userService.updateUserProfile(userDataJson, profileImage, authentication);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+            }
 
-            // Remove sensitive information
+            User updatedUser = userService.updateUserProfile(userDataJson, profileImage, coverImage, authentication);
             updatedUser.setPassword(null);
-
             return ResponseEntity.ok(updatedUser);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

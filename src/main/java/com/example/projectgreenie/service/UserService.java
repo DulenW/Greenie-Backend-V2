@@ -88,40 +88,36 @@ public class UserService {
         }).orElse(false);
     }
 
-    public User updateUserProfile(String userDataJson, MultipartFile profileImage, Authentication authentication) throws IOException {
-        // Parse the user data from JSON
+    public User updateUserProfile(String userDataJson, MultipartFile profileImage, MultipartFile coverImage, Authentication authentication) throws IOException {
         ProfileUpdateDTO profileUpdateDTO = objectMapper.readValue(userDataJson, ProfileUpdateDTO.class);
 
-        // Get authenticated user
-        String userEmail = authentication.getName();
-        User user = getUserByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        // Get authenticated user (by email or username)
+        String identity = authentication.getName();
+        Optional<User> userOpt = getUserByEmail(identity);
 
-        // Validation
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByUsername(identity);
+        }
+
+        User user = userOpt.orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Username validation
         if (profileUpdateDTO.getUsername() != null && !profileUpdateDTO.getUsername().equals(user.getUsername())) {
-            // Check if username contains spaces
             if (profileUpdateDTO.getUsername().contains(" ")) {
                 throw new IllegalArgumentException("Username cannot contain spaces");
             }
-
-            // Check if username follows pattern (3-20 alphanumeric characters or underscores)
             if (!profileUpdateDTO.getUsername().matches("^[a-zA-Z0-9_]{3,20}$")) {
                 throw new IllegalArgumentException("Username must be 3-20 characters (letters, numbers, underscores)");
             }
-
-            // Check if username is already taken by another user
-            // Use the existing repository methods since we don't have findByUsername
             boolean usernameExists = userRepository.findAll().stream()
                     .filter(existingUser -> !existingUser.getId().equals(user.getId()))
-                    .anyMatch(existingUser ->
-                            profileUpdateDTO.getUsername().equalsIgnoreCase(existingUser.getUsername()));
-
+                    .anyMatch(existingUser -> profileUpdateDTO.getUsername().equalsIgnoreCase(existingUser.getUsername()));
             if (usernameExists) {
                 throw new IllegalArgumentException("Username is already taken");
             }
         }
 
-        // Update user data
+        // Update fields
         if (profileUpdateDTO.getFullName() != null && !profileUpdateDTO.getFullName().trim().isEmpty()) {
             user.setFullName(profileUpdateDTO.getFullName());
         }
@@ -134,17 +130,22 @@ public class UserService {
             user.setBio(profileUpdateDTO.getBio());
         }
 
-        // Handle profile image upload if provided
         if (profileImage != null && !profileImage.isEmpty()) {
             String base64Image = encodeImageToBase64(profileImage);
-            String base64Url = "data:" + profileImage.getContentType() + ";base64," + base64Image;
-            user.setProfileImgUrl(base64Url);
+            user.setProfileImgUrl("data:" + profileImage.getContentType() + ";base64," + base64Image);
+        }
+
+        if (coverImage != null && !coverImage.isEmpty()) {
+            String base64Cover = encodeImageToBase64(coverImage);
+            String base64CoverUrl = "data:" + coverImage.getContentType() + ";base64," + base64Cover;
+            user.setCoverImgUrl(base64CoverUrl); // ← this line must be here
         }
 
 
-        // Save updated user
         return userRepository.save(user);
     }
+
+
 
     /**
      * Saves a profile image to the server and returns the URL path to access it.

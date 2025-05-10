@@ -111,6 +111,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/challenges/status/{status}").permitAll()
                         .requestMatchers("/api/challenges/**").permitAll() // Fallback for other GETs
 
+                        .requestMatchers("/api/users/update").authenticated()
+
                         // ADMIN: Challenges API
                         .requestMatchers("/api/admin/challenges/create").authenticated()
                         .requestMatchers("/api/admin/challenges/all").permitAll()
