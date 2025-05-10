@@ -136,9 +136,11 @@ public class UserService {
 
         // Handle profile image upload if provided
         if (profileImage != null && !profileImage.isEmpty()) {
-            String profileImageUrl = saveProfileImage(profileImage, user.getId());
-            user.setProfileImgUrl(profileImageUrl);
+            String base64Image = encodeImageToBase64(profileImage);
+            String base64Url = "data:" + profileImage.getContentType() + ";base64," + base64Image;
+            user.setProfileImgUrl(base64Url);
         }
+
 
         // Save updated user
         return userRepository.save(user);
@@ -182,4 +184,10 @@ public class UserService {
         }
         return fileName.substring(lastDotIndex);
     }
+
+    private String encodeImageToBase64(MultipartFile file) throws IOException {
+        byte[] bytes = file.getBytes();
+        return java.util.Base64.getEncoder().encodeToString(bytes);
+    }
+
 }
