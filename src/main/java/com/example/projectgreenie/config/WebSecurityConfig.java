@@ -40,6 +40,8 @@ public class WebSecurityConfig {
                                 "/api/auth/reset-password",
                                 "/api/auth/set-new-password",
 
+                                "/api/users/update",
+
                                 // Feed post APIs
                                 "/api/posts/create",
                                 "/api/posts/all",

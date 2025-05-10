@@ -169,7 +169,7 @@ public class UserService {
         Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
         // Return a relative URL path instead of absolute URL
-        return "/uploads/profiles/" + fileName;
+        return "http://localhost:8080/uploads/profiles/" + fileName; // use env variable in production
     }
 
     private String getFileExtension(String fileName) {
