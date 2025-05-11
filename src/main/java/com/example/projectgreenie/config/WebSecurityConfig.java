@@ -54,6 +54,8 @@ public class WebSecurityConfig {
                                 "/api/saved-posts/unsave",
                                 "/api/saved-posts//{userId}",
 
+                                "/api/admin/challenges/create",
+
                                 // Post Reporting
                                 "/api/reported-posts/report",
                                 "/api/reported-posts/all",
