@@ -14,7 +14,7 @@ import java.util.Map;
 public class OpenRouterService {
 
     private static final String API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    private static final String API_KEY = "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"; // 🔁 Replace with your actual key
+    private static final String API_KEY = "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"; // Replace with your key
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -30,35 +30,43 @@ public class OpenRouterService {
             headers.set("Authorization", "Bearer " + API_KEY);
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // 🧠 Strict Prompt
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", "google/gemini-pro-vision");
+            requestBody.put("model", "openai/gpt-4o");
 
             Map<String, Object> textPart = new HashMap<>();
             textPart.put("type", "text");
             textPart.put("text", """
-                You are an expert AI tasked with verifying the authenticity of images submitted for environmental cleanup challenges. You must determine if the image is a **real, natural photograph** or a **fake, AI-generated, animated, digitally illustrated, or cartoon image**.
+            You are an advanced AI verifier for an environmental cleanup reward system. Your decision determines whether a user receives payment.
+        
+            🔍 Your task:
+            Carefully analyze the **uploaded image** and the **description provided**.
+        
+            You must:
+            1. **Determine if the image is 100%% real** (natural, unedited, human-taken).
+            2. **Verify the description perfectly matches the image content** (no vague or unrelated text).
+            3. **Reject anything AI-generated**, cartoon-like, digitally created, or suspicious.
+        
+            🛑 Reject and return `Issue` if:
+            - The image is AI-generated, cartoon, synthetic, or digitally enhanced in any way.
+            - There are signs of abnormal lighting, textures, hands, faces, artifacts, or surreal elements.
+            - The image and description do not match precisely in activity, setting, or context.
+            - You are uncertain about the authenticity of the image.
+        
+            ✅ Only approve with `Verified` if:
+            - The photo is clearly real and natural.
+            - It shows actual cleanup or environmental work by real people or equipment.
+            - The description aligns fully with what is shown in the image.
+        
+            Always err on the side of caution. Users are paid based on your result.
+        
+            Return your decision in this format:
+        
+            Status: `Verified` or `Issue`  
+            Reason: A very short, strict reason (max 20 words)
+        
+            Description: %s
+            """.formatted(description));
 
-                🛑 Do NOT approve:
-                - AI-generated or cartoon-style images
-                - Digitally illustrated characters or backgrounds
-                - Unrealistic lighting, textures, faces, or hands
-                - Anything that lacks real-world photographic characteristics
-                Even if the description matches, the image must still be rejected if it is not a natural photo.
-
-                ✅ Only approve:
-                - Authentic, natural, real-world photographs
-                - Clear, unedited, human-taken images
-
-                🔍 Now, analyze the image and the description provided. Determine:
-
-                Status: Verified or Issue  
-                Reason:Provide a strict explanation for your decision. Be clear whether the image is AI-generated, cartoon-like, or real.
-
-                Always err on the side of caution. Any sign of non-natural or digital creation must result in "Issue".
-
-                Description: %s
-                """.formatted(description));
 
             Map<String, Object> imagePart = new HashMap<>();
             imagePart.put("type", "image_url");
@@ -92,11 +100,9 @@ public class OpenRouterService {
 
             System.out.println("🔍 FULL AI RESPONSE: " + content);
 
-            // Parse for format: "Status: ... Reason: ..."
             if (content.toLowerCase().contains("status:") && content.toLowerCase().contains("reason:")) {
                 String status = content.split("(?i)status:")[1].split("(?i)reason:")[0].trim();
                 String reason = content.split("(?i)reason:")[1].trim();
-
                 return status + " | " + reason;
             }
 
