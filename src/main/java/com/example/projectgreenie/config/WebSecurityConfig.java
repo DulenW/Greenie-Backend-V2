@@ -30,123 +30,124 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/api/auth/reset-password",
-                                "/api/auth/set-new-password",
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    // ✅ Auth & Password endpoints
+                    "/api/auth/login",
+                    "/api/auth/register",
+                    "/api/auth/send-otp",
+                    "/api/auth/verify-otp",
+                    "/api/auth/update-password-with-otp", // ✅ fixed: comma added here
 
-                                "/api/users/update",
+                    // Example user update
+                    "/api/users/update",
 
-                                // Feed post APIs
-                                "/api/posts/create",
-                                "/api/posts/all",
-                                "/api/posts/{postId}/like",
-                                "/api/posts/user-details/{userId}",
-                                "/api/posts/delete/{postId}",
+                    // Feed post APIs
+                    "/api/posts/create",
+                    "/api/posts/all",
+                    "/api/posts/{postId}/like",
+                    "/api/posts/user-details/{userId}",
+                    "/api/posts/delete/{postId}",
 
-                                // Save post APIs
-                                "/api/saved-posts/save",
-                                "/api/saved-posts/unsave",
-                                "/api/saved-posts//{userId}",
+                    // Save post APIs
+                    "/api/saved-posts/save",
+                    "/api/saved-posts/unsave",
+                    "/api/saved-posts//{userId}",
 
-                                // Post Reporting
-                                "/api/reported-posts/report",
-                                "/api/reported-posts/all",
-                                "/api/reported-posts/delete/{id}",
-                            
-                                "/api/test/broadcast",
-                                "/ws-feed/**",        // allow SockJS/WebSocket handshake endpoint
-                                "/topic/**",          // allow message broker topics
+                    // Post Reporting
+                    "/api/reported-posts/report",
+                    "/api/reported-posts/all",
+                    "/api/reported-posts/delete/{id}",
 
+                    "/api/test/broadcast",
+                    "/ws-feed/**",
+                    "/topic/**",
 
-                                // Comments and Likes in Posts
-                                "/api/posts/{postId}/comments/create",
-                                "/api/posts/{postId}/comments/all",
-                                "/api/posts/{postId}/likes/all",
-                                "/api/posts/{postId}/comments/count",
-                                "/api/posts/{postId}/unlike",
-                                "/api/posts/{postId}/{commentId}/comments/delete",
-                                "/api/posts/user-details/{userId}",
-                                "/api/posts/{postId}/react",
-                                "/api/posts/{postId}/reactions",
-                                "/api/posts/{postId}/likes/count",
+                    // Comments and Likes in Posts
+                    "/api/posts/{postId}/comments/create",
+                    "/api/posts/{postId}/comments/all",
+                    "/api/posts/{postId}/likes/all",
+                    "/api/posts/{postId}/comments/count",
+                    "/api/posts/{postId}/unlike",
+                    "/api/posts/{postId}/{commentId}/comments/delete",
+                    "/api/posts/user-details/{userId}",
+                    "/api/posts/{postId}/react",
+                    "/api/posts/{postId}/reactions",
+                    "/api/posts/{postId}/likes/count",
 
-                                // Admin endpoints
-                                "/api/admin/register",
-                                "/api/admin/login",
-                                "/api/admin/all",
-                                "/api/admin/{adminId}",
-                                "/api/admin/delete/{adminId}",
-                                "/api/admin/dashboard/stats",
-                                "/api/admin/dashboard/recent-orders",
-                                "/api/admin/dashboard/recent-posts"
-                        ).permitAll()
-                        .requestMatchers("/api/posts/**").authenticated()
-                        .requestMatchers(
-                                "/api/users/{id}",
-                                "/api/users/{userId}/points",
-                                "/api/order/apply-points",
-                                "/api/order/place",
-                                "/api/users/all",
+                    // Admin endpoints
+                    "/api/admin/register",
+                    "/api/admin/login",
+                    "/api/admin/all",
+                    "/api/admin/{adminId}",
+                    "/api/admin/delete/{adminId}",
+                    "/api/admin/dashboard/stats",
+                    "/api/admin/dashboard/recent-orders",
+                    "/api/admin/dashboard/recent-posts"
+                ).permitAll()
+                .requestMatchers("/api/posts/**").authenticated()
+                .requestMatchers(
+                    "/api/users/{id}",
+                    "/api/users/{userId}/points",
+                    "/api/order/apply-points",
+                    "/api/order/place",
+                    "/api/users/all",
 
-                                // Shop endpoints
-                                "/api/products/**",
-                                "/api/cart/**",
-                                "/shop/**",
+                    // Shop endpoints
+                    "/api/products/**",
+                    "/api/cart/**",
+                    "/shop/**",
 
-                                "/api/leaderboard",
-                                "/api/order/all",
-                                "/api/order/{orderId}"
-                        ).permitAll()
+                    "/api/leaderboard",
+                    "/api/order/all",
+                    "/api/order/{orderId}"
+                ).permitAll()
 
-                        // USER: Challenges API
-                        .requestMatchers("/api/challenges/create").authenticated()
-                        .requestMatchers("/api/challenges/all").permitAll()
-                        .requestMatchers("/api/challenges/{challengeId}").permitAll()
-                        .requestMatchers("/api/challenges/status/{status}").permitAll()
-                        .requestMatchers("/api/challenges/**").permitAll() // Fallback for other GETs
+                // USER: Challenges API
+                .requestMatchers("/api/challenges/create").authenticated()
+                .requestMatchers("/api/challenges/all").permitAll()
+                .requestMatchers("/api/challenges/{challengeId}").permitAll()
+                .requestMatchers("/api/challenges/status/{status}").permitAll()
+                .requestMatchers("/api/challenges/**").permitAll()
 
-                        .requestMatchers("/api/users/update").authenticated()
+                .requestMatchers("/api/users/update").authenticated()
 
-                        // ADMIN: Challenges API
-                        .requestMatchers("/api/admin/challenges/create").authenticated()
-                        .requestMatchers("/api/admin/challenges/all").permitAll()
-                        .requestMatchers("/api/admin/challenges/{challengeId}").permitAll()
-                        .requestMatchers("/api/admin/challenges/approve/{challengeId}").permitAll()
-                        .requestMatchers("/api/admin/challenges/status/{status}").permitAll()
-                        .requestMatchers("/api/admin/challenges/delete/{challengeId}").permitAll()
-                        .requestMatchers("/api/admin/challenges/**").permitAll() // fallback
+                // ADMIN: Challenges API
+                .requestMatchers("/api/admin/challenges/create").authenticated()
+                .requestMatchers("/api/admin/challenges/all").permitAll()
+                .requestMatchers("/api/admin/challenges/{challengeId}").permitAll()
+                .requestMatchers("/api/admin/challenges/approve/{challengeId}").permitAll()
+                .requestMatchers("/api/admin/challenges/status/{status}").permitAll()
+                .requestMatchers("/api/admin/challenges/delete/{challengeId}").permitAll()
+                .requestMatchers("/api/admin/challenges/**").permitAll()
 
-                        // Proof API
-                        .requestMatchers("/api/proof/").authenticated()
-                        .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
-                        .requestMatchers("/api/proof/submit/{id}", "/api/proof/all", "/api/proof/{id}").permitAll()
+                // Proof API
+                .requestMatchers("/api/proof/").authenticated()
+                .requestMatchers("/admin/proof/all", "/admin/proof/{proofID}").permitAll()
+                .requestMatchers("/api/proof/submit/{id}", "/api/proof/all", "/api/proof/{id}").permitAll()
 
-                        // Feed Post
-                        .requestMatchers("/api/posts").permitAll()
-                        .requestMatchers("/api/posts/{postId}/like").permitAll()
-                        .requestMatchers("/api/posts/{postId}/comments/create").permitAll()
-                        .requestMatchers("/api/posts/{postId}/comments/all").permitAll()
-                        .requestMatchers("/api/posts/{postId}/likes/all").permitAll()
-                        .requestMatchers("/api/posts/{postId}/like").permitAll()
-                        .requestMatchers("/api/posts/{postId}/comments/count").permitAll()
-                        .requestMatchers("/api/posts/{postId}/unlike").permitAll()
-                        .requestMatchers("/api/posts/{postId}/{commentId}/comments/delete").permitAll()
-                        .requestMatchers("/api/posts/user-details/{userId}").permitAll()
-                        .requestMatchers("/api/test/broadcast").permitAll()
+                // Feed Post
+                .requestMatchers("/api/posts").permitAll()
+                .requestMatchers("/api/posts/{postId}/like").permitAll()
+                .requestMatchers("/api/posts/{postId}/comments/create").permitAll()
+                .requestMatchers("/api/posts/{postId}/comments/all").permitAll()
+                .requestMatchers("/api/posts/{postId}/likes/all").permitAll()
+                .requestMatchers("/api/posts/{postId}/like").permitAll()
+                .requestMatchers("/api/posts/{postId}/comments/count").permitAll()
+                .requestMatchers("/api/posts/{postId}/unlike").permitAll()
+                .requestMatchers("/api/posts/{postId}/{commentId}/comments/delete").permitAll()
+                .requestMatchers("/api/posts/user-details/{userId}").permitAll()
+                .requestMatchers("/api/test/broadcast").permitAll()
 
+                // Add admin specific security
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Add admin specific security
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
