@@ -13,12 +13,15 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendResetLink(String to, String token) {
-        String subject = "Greenie Password Reset Link";
-        String resetUrl = "http://localhost:3000/reset-password?token=" + token;
+    /**
+     * Sends a 6-digit OTP for password reset
+     */
+    public void sendOtpEmail(String to, String otp) {
+        String subject = "Greenie OTP for Password Reset";
         String content = "<p>Hello,</p>"
-                + "<p>You requested to reset your password. Click the link below to set a new password:</p>"
-                + "<p><a href=\"" + resetUrl + "\">Reset Password</a></p>"
+                + "<p>Your OTP for password reset is:</p>"
+                + "<h2 style='color:green;'>" + otp + "</h2>"
+                + "<p>It will expire shortly. Please do not share this with anyone.</p>"
                 + "<br><p>If you did not request this, just ignore this email.</p>";
 
         try {
@@ -30,7 +33,7 @@ public class EmailService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send email", e);
+            throw new RuntimeException("Failed to send OTP email", e);
         }
     }
 }

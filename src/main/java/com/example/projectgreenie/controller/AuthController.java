@@ -1,12 +1,11 @@
 package com.example.projectgreenie.controller;
 
 import com.example.projectgreenie.dto.LoginResponseDTO;
+import com.example.projectgreenie.dto.OtpRequestDTO;
 import com.example.projectgreenie.model.User;
 import com.example.projectgreenie.security.JwtUtil;
-import com.example.projectgreenie.service.UserService;
-import com.example.projectgreenie.dto.PasswordResetRequestDTO;
-import com.example.projectgreenie.dto.SetNewPasswordDTO;
 import com.example.projectgreenie.service.AuthService;
+import com.example.projectgreenie.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +54,7 @@ public class AuthController {
         boolean authenticated = userService.authenticate(email, password);
         if (authenticated) {
             String token = jwtUtil.generateToken(email);
-            
+
             Optional<User> userOpt = userService.getUserByEmail(email);
             if (userOpt.isPresent()) {
                 Map<String, String> response = new HashMap<>();
@@ -68,20 +67,35 @@ public class AuthController {
     }
 
     /**
-     * Request Password Reset (Send Reset Email / Print Token)
+     * OTP-based: Send OTP to Email
      */
-    @PostMapping("/reset-password")
-    public ResponseEntity<String> requestPasswordReset(@RequestBody PasswordResetRequestDTO requestDTO) {
-        String response = authService.sendPasswordResetLink(requestDTO);
+    @PostMapping("/send-otp")
+    public ResponseEntity<String> sendOtp(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String response = authService.sendOtpToEmail(email);
         return ResponseEntity.ok(response);
     }
 
     /**
-     * Set New Password
+     * OTP-based: Verify OTP
      */
-    @PostMapping("/set-new-password")
-    public ResponseEntity<String> setNewPassword(@RequestBody SetNewPasswordDTO requestDTO) {
-        String response = authService.resetPassword(requestDTO);
-        return ResponseEntity.ok(response);
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Boolean> verifyOtp(@RequestBody OtpRequestDTO dto) {
+        boolean isValid = authService.verifyOtp(dto.getEmail(), dto.getOtp());
+        return ResponseEntity.ok(isValid);
+    }
+
+    /**
+     * OTP-based: Reset Password using OTP
+     */
+    @PostMapping("/update-password-with-otp")
+    public ResponseEntity<String> updatePasswordWithOtp(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String otp = body.get("otp");
+        String newPassword = body.get("newPassword");
+        String confirmPassword = body.get("confirmPassword");
+
+        String message = authService.updatePasswordWithOtp(email, otp, newPassword, confirmPassword);
+        return ResponseEntity.ok(message);
     }
 }
