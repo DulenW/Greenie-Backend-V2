@@ -45,6 +45,8 @@ public class WebSecurityConfig {
                     // Example user update
                     "/api/users/update",
 
+                        "/api/admin/challenges/create",
+
                     // Feed post APIs
                     "/api/posts/create",
                     "/api/posts/all",
