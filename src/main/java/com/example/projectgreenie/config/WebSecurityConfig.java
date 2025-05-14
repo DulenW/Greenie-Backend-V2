@@ -52,7 +52,7 @@ public class WebSecurityConfig {
                     "/api/posts/all",
                     "/api/posts/{postId}/like",
                     "/api/posts/user-details/{userId}",
-                    "/api/posts/delete/{postId}",
+                    "/api/posts/delete/{postId}", 
 
                     // Save post APIs
                     "/api/saved-posts/save",
